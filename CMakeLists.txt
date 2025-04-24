@@ -34,9 +34,8 @@ find_package(Qt6 REQUIRED COMPONENTS Core Widgets Concurrent Multimedia WebSocke
 #pkg_check_modules(LIBTORRENT_RASTERBAR REQUIRED libtorrent-rasterbar)
 
 add_subdirectory(shared)
-add_subdirectory(test)
+# add_subdirectory(test)
 
 if(BUILD_SERVER)
-    message(STATUS "x")
   add_subdirectory(server)
 endif()

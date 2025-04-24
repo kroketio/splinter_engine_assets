@@ -6,6 +6,8 @@ Optimized to index, search through, and serve >100k `.png`s.
 
 Bad code, undocumented, and work-in-progress.
 
+`sudo apt install -y libpng pkg-config cmake qt6-base-dev qt6-multimedia-dev qt6-websockets-dev qt6-httpserver-dev`
+
 #### systemd service
 
 ```
