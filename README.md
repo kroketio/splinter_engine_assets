@@ -1,0 +1,25 @@
+## Asset Server
+
+Asset server for the Splinter game engine in C++.
+
+Optimized to index, search through, and serve >100k `.png`s.
+
+Bad code, undocumented, and work-in-progress.
+
+#### systemd service
+
+```
+[Unit]
+Description=Persistent asset service
+After=network.target
+
+[Service]
+User=assets
+Restart=on-failure
+RestartSec=20
+WorkingDirectory=/home/assets/splinter_engine_asset_server
+ExecStart=bash /home/assets/splinter_engine_asset_server/bin/server
+ 
+[Install]
+WantedBy=multi-user.target
+```

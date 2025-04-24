@@ -1,0 +1,28 @@
+[gd_resource type="StandardMaterial3D" load_steps=5 format=3 uid="uid://cmphmmq2uebcw"]
+
+[ext_resource type="Texture2D" uid="uid://bt6r25rm08yne" path="res://GreenWoodPlanks_1K_Color.jpg" id="1_tafiq"]
+[ext_resource type="Texture2D" uid="uid://ctuba384i70f6" path="res://GreenWoodPlanks_1K_ARM.png" id="2_3sv7p"]
+[ext_resource type="Texture2D" uid="uid://dfcbtuk4awt4v" path="res://GreenWoodPlanks_1K_Displacement.jpg" id="3_yggkk"]
+[ext_resource type="Texture2D" uid="uid://cioo5fhxuq2di" path="res://GreenWoodPlanks_1K_NormalGL.jpg" id="4_x11t6"]
+
+[resource]
+albedo_texture = ExtResource("1_tafiq")
+metallic = 0.1
+metallic_specular = 0.1
+metallic_texture = ExtResource("2_3sv7p")
+metallic_texture_channel = 2
+roughness = 0.85
+roughness_texture = ExtResource("2_3sv7p")
+roughness_texture_channel = 1
+normal_enabled = true
+normal_scale = 0.4
+normal_texture = ExtResource("4_x11t6")
+ao_enabled = true
+ao_light_affect = 0.9
+ao_texture = ExtResource("2_3sv7p")
+heightmap_scale = 1.0
+heightmap_deep_parallax = true
+heightmap_min_layers = 4
+heightmap_max_layers = 8
+heightmap_texture = ExtResource("3_yggkk")
+uv1_scale = Vector3(1.5, 1.5, 1.5)

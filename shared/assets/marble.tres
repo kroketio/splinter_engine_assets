@@ -1,0 +1,25 @@
+[gd_resource type="StandardMaterial3D" load_steps=7 format=3 uid="uid://bf1b2w8resnek"]
+
+[ext_resource type="Texture2D" uid="uid://vpn22so0coyp" path="res://GreyGraniteMarble17405_1K_Color.png" id="1_ksnmx"]
+[ext_resource type="Texture2D" uid="uid://cbg71yfsu6jjd" path="res://GreyGraniteMarble17405_1K_AmbientOcclusion.png" id="2_tvqsq"]
+[ext_resource type="Texture2D" uid="uid://c6uu641jblm6b" path="res://OfficeCeiling16363_1K_Emission.png" id="3_qwtav"]
+[ext_resource type="Texture2D" uid="uid://cy53j81p04evv" path="res://FabricpatternDarkRedforchildren36580_1K_Displacement.png" id="4_lhj5o"]
+[ext_resource type="Texture2D" uid="uid://c21e8jlmdvjc6" path="res://GreyGraniteMarble17405_1K_NormalGL.png" id="5_uag1q"]
+[ext_resource type="Texture2D" uid="uid://dswo2ktyydkvy" path="res://GreyGraniteMarble17405_1K_Roughness.png" id="6_gajmh"]
+
+[resource]
+albedo_texture = ExtResource("1_ksnmx")
+metallic = 0.3
+metallic_specular = 0.2
+roughness = 0.65
+roughness_texture = ExtResource("6_gajmh")
+emission_texture = ExtResource("3_qwtav")
+normal_enabled = true
+normal_scale = 0.8
+normal_texture = ExtResource("5_uag1q")
+ao_enabled = true
+ao_texture = ExtResource("2_tvqsq")
+heightmap_deep_parallax = true
+heightmap_min_layers = 8
+heightmap_max_layers = 32
+heightmap_texture = ExtResource("4_lhj5o")

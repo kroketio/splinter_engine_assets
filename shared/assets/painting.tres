@@ -1,0 +1,25 @@
+[gd_resource type="StandardMaterial3D" load_steps=7 format=3 uid="uid://bb0k627qghre6"]
+
+[ext_resource type="Texture2D" uid="uid://cl0ka874we7q6" path="res://AbstractPainting0124020_1K_Color.png" id="1_kpp82"]
+[ext_resource type="Texture2D" uid="uid://clhol5bvdd41w" path="res://AbstractPainting0124020_1K_AmbientOcclusion.png" id="2_i6dhv"]
+[ext_resource type="Texture2D" uid="uid://c6uu641jblm6b" path="res://OfficeCeiling16363_1K_Emission.png" id="3_qbayo"]
+[ext_resource type="Texture2D" uid="uid://cy53j81p04evv" path="res://FabricpatternDarkRedforchildren36580_1K_Displacement.png" id="4_b0wfa"]
+[ext_resource type="Texture2D" uid="uid://b2cq3cghb7nhf" path="res://AbstractPainting0124020_1K_NormalGL.png" id="5_7ba67"]
+[ext_resource type="Texture2D" uid="uid://dnkctj0n3rrp8" path="res://AbstractPainting0124020_1K_Roughness.png" id="6_psfik"]
+
+[resource]
+albedo_texture = ExtResource("1_kpp82")
+metallic = 0.14
+metallic_specular = 0.26
+roughness = 0.2
+roughness_texture = ExtResource("6_psfik")
+emission_texture = ExtResource("3_qbayo")
+normal_enabled = true
+normal_scale = 0.6
+normal_texture = ExtResource("5_7ba67")
+ao_enabled = true
+ao_texture = ExtResource("2_i6dhv")
+heightmap_deep_parallax = true
+heightmap_min_layers = 8
+heightmap_max_layers = 32
+heightmap_texture = ExtResource("4_b0wfa")

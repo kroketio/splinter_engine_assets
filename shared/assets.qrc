@@ -1,0 +1,18 @@
+<RCC>
+    <qresource prefix="/">
+        <file>assets/brickwall.tres</file>
+        <file>assets/cobblestone.tres</file>
+        <file>assets/concrete.tres</file>
+        <file>assets/grass_leafs.tres</file>
+        <file>assets/grass.tres</file>
+        <file>assets/metal_sheet.tres</file>
+        <file>assets/planks.tres</file>
+        <file>assets/plaster_damaged.tres</file>
+        <file>assets/stone.tres</file>
+        <file>assets/tiles.tres</file>
+        <file>assets/default.tres</file>
+        <file>assets/fabric.tres</file>
+        <file>assets/painting.tres</file>
+        <file>assets/marble.tres</file>
+    </qresource>
+</RCC>

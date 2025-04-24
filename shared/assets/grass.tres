@@ -1,0 +1,28 @@
+[gd_resource type="StandardMaterial3D" load_steps=5 format=3 uid="uid://bxjcx4w2nov2e"]
+
+[ext_resource type="Texture2D" uid="uid://b8cq5wsa0vdmo" path="res://GrassandLeaves628_1K_Color.jpg" id="1_q5yvd"]
+[ext_resource type="Texture2D" uid="uid://hi8gg1pq7ciq" path="res://GrassandLeaves628_1K_ARM.png" id="2_qhmvt"]
+[ext_resource type="Texture2D" uid="uid://d1a4b86rgkw2h" path="res://GrassandLeaves628_1K_Displacement.jpg" id="3_3ovrm"]
+[ext_resource type="Texture2D" uid="uid://c7mnw7vsctobi" path="res://GrassandLeaves628_1K_NormalGL.jpg" id="4_34258"]
+
+[resource]
+albedo_texture = ExtResource("1_q5yvd")
+metallic = 0.1
+metallic_specular = 0.0
+metallic_texture = ExtResource("2_qhmvt")
+metallic_texture_channel = 1
+roughness = 0.9
+roughness_texture = ExtResource("2_qhmvt")
+roughness_texture_channel = 1
+normal_enabled = true
+normal_scale = 0.4
+normal_texture = ExtResource("4_34258")
+ao_enabled = true
+ao_light_affect = 0.6
+ao_texture = ExtResource("2_qhmvt")
+heightmap_scale = 0.473
+heightmap_deep_parallax = true
+heightmap_min_layers = 4
+heightmap_max_layers = 8
+heightmap_texture = ExtResource("3_3ovrm")
+uv1_scale = Vector3(3, 3, 3)

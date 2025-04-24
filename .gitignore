@@ -1,0 +1,6 @@
+*.so
+*.swp
+.idea
+src/tools/masker/dist
+src/tools/masker/venv
+src/tools/masker/build

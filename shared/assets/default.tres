@@ -1,0 +1,19 @@
+[gd_resource type="StandardMaterial3D" load_steps=6 format=3 uid="uid://ccbearjg6b2lj"]
+
+[ext_resource type="Texture2D" uid="uid://bioh8evrl0w8l" path="res://OfficeCeiling16363_1K_Color.png" id="1_ir6w1"]
+[ext_resource type="Texture2D" uid="uid://c6uu641jblm6b" path="res://OfficeCeiling16363_1K_Emission.png" id="2_y7ndg"]
+[ext_resource type="Texture2D" uid="uid://c2ncb1aj3tn50" path="res://OfficeCeiling16363_1K_Metalness.png" id="3_3a8jl"]
+[ext_resource type="Texture2D" uid="uid://bhny262otk5yh" path="res://OfficeCeiling16363_1K_NormalGL.png" id="4_mb6pw"]
+[ext_resource type="Texture2D" uid="uid://313a2fhon4jh" path="res://OfficeCeiling16363_1K_Roughness.png" id="5_dqhm0"]
+
+[resource]
+albedo_texture = ExtResource("1_ir6w1")
+metallic = 0.4
+metallic_specular = 0.4
+metallic_texture = ExtResource("3_3a8jl")
+roughness = 0.8
+roughness_texture = ExtResource("5_dqhm0")
+emission_texture = ExtResource("2_y7ndg")
+normal_enabled = true
+normal_scale = 0.25
+normal_texture = ExtResource("4_mb6pw")
