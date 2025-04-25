@@ -81,36 +81,36 @@ void TextureImage::ensure_thumbnail(bool force, QString &err) {
     return;
   }
 
-  const QFileInfo path= this->path_thumbnail();
-  const QString path_out = path.absoluteFilePath();
-  if(path_out.isEmpty()) {
+  const QFileInfo path_thumb = this->path_thumbnail();
+  const QString path_thumb_out = path_thumb.absoluteFilePath();
+  if(path_thumb_out.isEmpty()) {
     err = "could not generate path_out";
     qWarning() << err;
     return;
   }
 
-  if(Utils::fileExists(path_out) && !force) {
+  if(Utils::fileExists(path_thumb_out) && !force) {
     return;
   }
 
   auto width_new = 256;
   auto height_new = 256;
 
-  qDebug() << "writing:" << path_out;
+  qDebug() << "writing:" << path_thumb_out;
   QImage img = QImage(path.absoluteFilePath());
   img = img.scaled(height_new, width_new, Qt::KeepAspectRatio);
 
   bool res;
   if(isAlpha)
-    res = img.save(path_out, "png", 80);
+    res = img.save(path_thumb_out, "png", 80);
   else
-    res = img.save(path_out, "jpg", 80);
+    res = img.save(path_thumb_out, "jpg", 80);
 
   if(!res) {
-    err = QString("could not save image %1").arg(path_out);
+    err = QString("could not save image %1").arg(path_thumb_out);
     qWarning() << err;
-  } else if(!Utils::fileExists(path_out)) {
-    err = QString("failed to write %1").arg(path_out);
+  } else if(!Utils::fileExists(path_thumb_out)) {
+    err = QString("failed to write %1").arg(path_thumb_out);
     qWarning() << err;
   }
 }
