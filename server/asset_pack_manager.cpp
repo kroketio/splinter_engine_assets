@@ -14,7 +14,7 @@ void AssetPackManager::load(const QString &scan_dir, QString &err) {
     return;
   }
 
-  QRegularExpression rx(".*.json.fixed");
+  QRegularExpression rx(".*.json");
   QList<QFileInfo> paths = Utils::fileFind(rx, scan_dir, 0, 0, 5000);
 
   for(const auto &path_info: paths) {
