@@ -17,7 +17,9 @@
 using namespace std::chrono;
 
 WebServer::WebServer(QObject *parent) : m_server(new QHttpServer(this)), QObject(parent) {
-  m_server->route("/", [] { return "Hello"; });
+  m_server->route("/", [] {
+    return "Hello";
+  });
 
   m_server->route("/api/1/asset_pack/vmtvtf_pack", [](const QHttpServerRequest &request) {
     QFuture<QHttpServerResponse> future = QtConcurrent::run([&request] {
@@ -48,6 +50,9 @@ WebServer::WebServer(QObject *parent) : m_server(new QHttpServer(this)), QObject
       for (auto &key: pack->textures.keys()) {
         const QSharedPointer<Texture> texture = pack->textures.value(key);
         const auto diffuse = texture->get_diffuse(TextureSize::x1024, true);
+        if (diffuse.isNull())
+          continue;
+
         auto _vmt = diffuse->path_vmt();
         auto _vtf = diffuse->path_vtf();
         if (_vmt.exists())
@@ -94,7 +99,7 @@ WebServer::WebServer(QObject *parent) : m_server(new QHttpServer(this)), QObject
 
       process.write(out);
       process.closeWriteChannel();
-      process.waitForFinished();
+      process.waitForFinished(-1);
       qDebug() << "Zip stderr:" << process.readAllStandardError();
 
       auto response = QHttpServerResponse::fromFile(outputZipPath);

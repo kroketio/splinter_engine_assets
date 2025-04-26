@@ -28,14 +28,22 @@ namespace vtf {
 
     const auto diffuse = texture->get_diffuse(TextureSize::x1024, true);
     QFileInfo path_input_image = diffuse->path;
-    qDebug() << path_input_image.absoluteFilePath();
     QFileInfo path_output_vtf = diffuse->path_vtf();
     QFileInfo path_output_vmt = diffuse->path_vmt();
     QString asset_pack_name = texture->asset_pack()->name();
     QString texture_name = diffuse->name;
 
+    if (path_output_vmt.exists()) {
+      return false;
+    }
+
     if (!path_input_image.exists()) {
       qWarning() << "vtf convert: input path does not exist:" << path_input_image.absoluteFilePath();
+    }
+
+    auto diffuse_width = diffuse->dimensions.width();
+    if (diffuse_width != 128 && diffuse_width != 256 && diffuse_width != 512 && diffuse_width != 1024 && diffuse_width != 2048 && diffuse_width != 4096) {
+      return false;
     }
 
     auto path_output_vtf_str = path_output_vtf.absoluteFilePath().toStdString();
@@ -67,7 +75,7 @@ namespace vtf {
 
     fclose(fp);
 
-    if (image->m_height == -1 || image->m_width == -1) {
+    if (image->m_height == -1 && image->m_width == -1) {
       qWarning() << "vtf convert: could not stb open, bad width or height:" << path_input_image.absoluteFilePath();
       return false;
     }
@@ -82,7 +90,7 @@ namespace vtf {
     constexpr int target_width = 512;
     int target_height = (image->m_height * target_width) / image->m_width;
 
-    if (image->m_height != target_height || image->m_width != target_width) {
+    if (image->m_height != target_height && image->m_width != target_width) {
       if (!image->resize(target_width, target_height))
         return false;
     }
@@ -165,10 +173,18 @@ namespace vtf {
                   "\"$baseTexture\" \"%1/%2\"\n"
                   "\"$surfaceprop\" \"brick\"\n"
                   "\"$translucent\" %3\n"
+                  "\"%keywords\" \"%4%5\"\n"
                   "}\n";
     vmt = vmt.replace("%1", asset_pack_name);
     vmt = vmt.replace("%2", diffuse->name_original);
     vmt = vmt.replace("%3", diffuse->isAlpha ? "1" : "0");
+    vmt = vmt.replace("%4", asset_pack_name.replace("_1k", ""));
+
+    if (auto tags = texture->tags(); !tags.empty()) {
+      QStringList keys = tags.keys();
+      auto joinedKeys = keys.join(",");
+      vmt = vmt.replace("%5", "," + joinedKeys);
+    }
 
     QFile file_vmt(path_output_vmt.absoluteFilePath());
     if (file_vmt.open(QIODevice::WriteOnly | QIODevice::Text)) {
