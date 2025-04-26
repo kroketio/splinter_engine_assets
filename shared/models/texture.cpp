@@ -8,6 +8,7 @@ TextureImage::TextureImage(
     const TextureImageInfo &texinfo,
     const TextureImageExt ext, QObject *parent) : ext(ext), QObject(parent) {
   this->name = texinfo.name;
+  this->name_original = texinfo.name_original;
   this->size = texinfo.size;
   this->type = texinfo.type;
   this->variant = texinfo.variant;
@@ -25,6 +26,8 @@ TextureImage::TextureImage(
 void TextureImage::setTextureImageType(const TextureImageType _type) {
   this->type = _type;
 }
+
+void TextureImage::setPack(AssetPack* p_pack) { pack = p_pack; }
 
 void TextureImage::setPath(const QFileInfo &path){
   this->path = path;
@@ -118,6 +121,18 @@ void TextureImage::ensure_thumbnail(bool force, QString &err) {
 void TextureImage::metadata_generate() {
   inspect_channels_and_dimensions();
   inspect_checksum();
+}
+
+QFileInfo TextureImage::path_vtf() const {
+  auto _basedir = globals::cacheDirectory + QDir::separator() + pack->name() + QDir::separator() + "vmtvtf" + QDir::separator();
+  std::filesystem::create_directories(_basedir.toStdString());
+  return QFileInfo(_basedir + QDir::separator() + this->name_original + ".vtf");
+}
+
+QFileInfo TextureImage::path_vmt() const {
+  auto _basedir = globals::cacheDirectory + QDir::separator() + pack->name() + QDir::separator() + "vmtvtf" + QDir::separator();
+  std::filesystem::create_directories(_basedir.toStdString());
+  return QFileInfo(_basedir + QDir::separator() + this->name_original + ".vmt");
 }
 
 QFileInfo TextureImage::path_thumbnail() {

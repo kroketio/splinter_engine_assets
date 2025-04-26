@@ -1,6 +1,12 @@
 file(GLOB SERVER_SOURCE_FILES
     "*.h"
     "*.cpp"
+    "external/stb/*.h"
+    "external/stb/*.cpp"
+    "lib/vtf/*.h"
+    "lib/vtf/*.cpp"
+    "lib/vtf/common/*.h"
+    "lib/vtf/common/*.cpp"
 )
 
 set(VTFLIB_STATIC OFF CACHE STRING "VTFLIB_STATIC")
@@ -11,6 +17,11 @@ add_executable(server main.cpp
     ${RESOURCE_FILES}
 )
 
+target_include_directories(server PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}/external/VTFLib/VTFLib
+        external)
+
 target_link_libraries(server PUBLIC
     Qt6::Core
     Qt6::Multimedia
@@ -20,6 +31,7 @@ target_link_libraries(server PUBLIC
     Qt6::Concurrent
     PNG::PNG
     shared
+    vtflib
 )
 
 if(UNIX AND NOT APPLE AND PLUGIN_AUTOMASK)

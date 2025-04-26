@@ -36,6 +36,23 @@ AssetPackWorker::AssetPackWorker(
   m_meta_sql = m_pack->sql_meta();
 }
 
+// void TextureImage::process(QString output_dir) {
+//   if(busy) return;
+//   busy = true;
+//
+//   m_job = new vtf::VtfConvertJob(m_ctx->assetPackManager->textures_flat, output_dir, this);
+//   connect(m_job, &vtf::VtfConvertJob::logMessage, [this](QString msg) {
+//     ui->log->appendPlainText(msg);
+//     ui->log->verticalScrollBar()->setValue(ui->log->verticalScrollBar()->maximum());
+//   });
+//
+//   connect(m_job, &vtf::VtfConvertJob::progress, [this](int pct){
+//     ui->progressBar->setValue(pct);
+//   });
+//
+//   busy = false;
+// }
+
 void AssetPackWorker::process() {
   for(int i = 0; i < m_iterations; i++) {
     this->processPath(m_paths.at(i));
@@ -59,6 +76,7 @@ QSharedPointer<TextureImage> AssetPackWorker::processPath(const QFileInfo &path)
 
   // ==== 1.
   auto basename = path.baseName();
+
   auto texinfo = TextureImageInfo(basename);
   if(!texinfo.success) {
     emit logMessage(QString("%1: %2").arg(basename, texinfo.errorString), false);
@@ -102,6 +120,7 @@ QSharedPointer<TextureImage> AssetPackWorker::processPath(const QFileInfo &path)
   QSharedPointer<TextureImage> tex =
       QSharedPointer<TextureImage>(new TextureImage(texinfo, ext, this));
   tex->setPath(path);
+  tex->setPack(m_pack);
 
   // for the diffuse (the rest can be on-demand)
   if(texinfo.type == TextureImageType::diffuse) {
@@ -128,6 +147,13 @@ QSharedPointer<TextureImage> AssetPackWorker::processPath(const QFileInfo &path)
   }
 
   collection->setTexture(tex);
+
+  // generate vtf/vmt
+  if (texinfo.type == TextureImageType::diffuse) {
+    if (globals::FUNC_GENERATE_VMT_VTF_FILES != nullptr)
+      globals::FUNC_GENERATE_VMT_VTF_FILES(static_cast<void*>(collection.get()));
+  }
+
   return tex;
 }
 
@@ -336,8 +362,9 @@ void AssetPack::scan() {
   QList<QFileInfo> paths;
   for(const QDir &path: dataPaths) {
     qDebug() << "scan_textures:" << path.absolutePath();
-    for (const QFileInfo& _path: Utils::fileFind(rx, path.absolutePath(), 0, 2, 500000))
+    for (const QFileInfo& _path: Utils::fileFind(rx, path.absolutePath(), 0, 2, 500000)) {
       paths.append(_path);
+    }
   }
 
   qDebug() << "scan_textures" << paths.size();

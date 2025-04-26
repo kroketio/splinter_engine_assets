@@ -13,6 +13,9 @@ namespace globals {
   QFileInfo pathDatabase;
 
   QMap<QString, QSharedPointer<TextureTag>> CACHE_TEXTURE_TAGS = {};
+
+  //std::function<bool(const QFileInfo&, const QFileInfo&, const QFileInfo&, const QString&, const QString&)> FUNC_GENERATE_VMT_VTF_FILES = nullptr;
+  std::function<bool(void*)> FUNC_GENERATE_VMT_VTF_FILES = nullptr;
 }
 
 QString cleanTextureTag(QString tag) {

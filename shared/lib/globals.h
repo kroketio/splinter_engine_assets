@@ -14,6 +14,8 @@ namespace globals {
   extern QString configDirectoryAssetsU2net;
   extern QString cacheDirectory;
   extern QFileInfo pathDatabase;
+
+  extern std::function<bool(void*)> FUNC_GENERATE_VMT_VTF_FILES;
 }
 
 enum TextureLicense {
@@ -85,6 +87,7 @@ extern const QMap<TextureImageType, QString> textureImageType2Str;
 
 struct TextureImageInfo {
   explicit TextureImageInfo(const QString &name) {
+    this->name_original = name;
     auto spl = name.split("_");
     if (spl.size() < 3) {
       this->errorString = "split('_') < 3";
@@ -122,6 +125,7 @@ struct TextureImageInfo {
   }
 
   QString name = "";
+  QString name_original = "";
   TextureSize size;
   TextureImageType type;
   QString variant = "";

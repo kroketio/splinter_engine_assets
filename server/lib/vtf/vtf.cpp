@@ -1,7 +1,13 @@
-#include <unordered_map>
+#include <QBuffer>
+#include <QCoreApplication>
+#include <QDirIterator>
+#include <QObject>
+#include <QResource>
+
+#include <algorithm>
 #include <functional>
 #include <iostream>
-#include <algorithm>
+#include <unordered_map>
 
 #include "vtf.h"
 
@@ -11,401 +17,166 @@
 #include "lib/vtf/common/util.hpp"
 #include "lib/vtf/common/vtftools.hpp"
 
+#include "models/asset_pack.h"
+#include "models/texture.h"
+
 using namespace VTFLib;
 
 namespace vtf {
+  bool generate_vmt_vtf_files(void* tex) {
+    auto *texture = static_cast<Texture *>(tex);
 
-void VtfConvertThread::run() {
-	m_worker = new VtfConvertWorker(m_textures, m_output_dir, this);
-	connect(m_worker, &VtfConvertWorker::logMessage, this, &VtfConvertThread::logMessage);
-	connect(m_worker, &VtfConvertWorker::finished, this, &QThread::quit);	
-	connect(m_worker, &VtfConvertWorker::finished, m_worker, &VtfConvertWorker::deleteLater);
-	connect(m_worker, &VtfConvertWorker::iterationFinished, this, &VtfConvertThread::iterationFinished);
-	m_worker->process();
-}
+    const auto diffuse = texture->get_diffuse(TextureSize::x1024, true);
+    QFileInfo path_input_image = diffuse->path;
+    qDebug() << path_input_image.absoluteFilePath();
+    QFileInfo path_output_vtf = diffuse->path_vtf();
+    QFileInfo path_output_vmt = diffuse->path_vmt();
+    QString asset_pack_name = texture->asset_pack()->name();
+    QString texture_name = diffuse->name;
 
-void VtfConvertThread::setTextures(QList<QSharedPointer<Texture>> textures) {
-	m_textures = textures;
-}
-
-void VtfConvertThread::setOutputDir(QString output_dir) {
-	m_output_dir = output_dir;
-}
-
-VtfConvertWorker::VtfConvertWorker(QList<QSharedPointer<Texture>> textures, QString output_dir, QObject* parent) : 
-	m_textures(textures), 
-	m_output_dir(output_dir), 
-	QObject(parent) {}
-
-void VtfConvertWorker::process() {
-	for(QSharedPointer<Texture> &tex: m_textures) {
-		auto path_relative = tex->assetPack()->dir();
-		QSharedPointer<TextureImage> diffuse = tex->get_diffuse(TextureSize::x1024, true);
-		if(!diffuse || !diffuse->path.exists()) {
-			emit logMessage("skipping, no defuse: " + tex->name + " ");
-			continue;
-		}
-
-		auto filename = diffuse->path.completeBaseName();
-		auto filename_out_vtf =  QString("%1.vtf").arg(filename);
-		auto filename_out_vmt =  QString("%1.vmt").arg(filename);
-
-		QDir dir(m_output_dir + QDir::separator() + path_relative);
-		QString path_in_str = diffuse->path.absoluteFilePath();
-		QString path_out_vtf_str = dir.filePath(filename_out_vtf);
-		QString path_out_vmt_str = dir.filePath(filename_out_vmt);
-		std::filesystem::path path_in(path_in_str.toStdString());
-		std::filesystem::path path_out_vtf(path_out_vtf_str.toStdString());
-		std::filesystem::path path_out_vmt(path_out_vmt_str.toStdString());
-
-		if(!std::filesystem::exists(path_out_vtf_str.toStdString())) {
-			emit logMessage("writing: " + filename + ".vtf");
-			this->process_file(path_relative, path_in, path_out_vtf, path_out_vmt);
-		} else {
-			emit logMessage("already exists: " + filename + ".vtf");
-		}
-
-		emit iterationFinished();
-	}
-
-    emit finished();
-}
-
-bool VtfConvertWorker::set_properties(VTFLib::CVTFFile* vtfFile) {
-	int compressionLevel = 0;  // Cannot use DEFLATE when version is <= 7.5
-
-	//if (m_opts->has(opts::version) || compressionLevel > 0 || vtfFile->GetFormat() == IMAGE_FORMAT_BC7) {
-	// HARDCODED TO VERSION 7.6
-	auto verStr = "7.2";
-
-	int majorVer = 7;
-	int minorVer = 2;
-	// if (!get_version_from_str(verStr, majorVer, minorVer)) {
-	// 	qWarning() << "Invalid version" << verStr << "! Valid versions: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6";
-	// 	return false;
-	// }
-
-	minorVer = minorVer;
-	vtfFile->SetVersion(majorVer, minorVer);
-
-	// Set the DEFLATE compression level
-	if (!vtfFile->SetAuxCompressionLevel(compressionLevel) && compressionLevel != 0) {
-		qWarning() << "Could not set compression level to" << compressionLevel;
-		return false;
-	}
-
-	// These should be defaulted to off
-	// we're not going to set them explicitly to the value of the opts because we may have gotten them from another vtf
-
-	bool normal = false;
-	if (normal)
-		vtfFile->SetFlag(TEXTUREFLAGS_NORMAL, true);
-
-	// if (m_opts->get<bool>(opts::clamps))
-
-	// if (m_opts->get<bool>(opts::trilinear))
-	// 	vtfFile->SetFlag(TEXTUREFLAGS_TRILINEAR, true);
-
-	// if (m_opts->get<bool>(opts::pointsample))
-	// 	vtfFile->SetFlag(TEXTUREFLAGS_POINTSAMPLE, true);
-
-	// if (m_opts->get<bool>(opts::srgb))
-	// 	vtfFile->SetFlag(TEXTUREFLAGS_SRGB, true);
-
-	// Mip count gets set earlier by user input
-	if (vtfFile->GetMipmapCount() == 1)
-		vtfFile->SetFlag(TEXTUREFLAGS_NOMIP, true);
-
-	// Same deal for the below issues- only override default if specified
-	// @TODO: possibly start at 0
-	// if (m_opts->has(opts::startframe))
-	// 	vtfFile->SetStartFrame(0);
-
-	vtfFile->ComputeReflectivity();
-
-	// @TODO: possibly set to 0
-	// if (m_opts->has(opts::bumpscale))
-	// 	vtfFile->SetBumpmapScale(m_opts->get<float>(opts::bumpscale));
-
-	return true;
-}
-
-bool VtfConvertWorker::add_image_data_raw(
-	VTFLib::CVTFFile* file, const void* data, VTFImageFormat format, VTFImageFormat dataFormat, int w, int h,
-	bool create) {
-	vlByte* dest = nullptr;
-
-	// Convert to requested format, if necessary
-	if (format != IMAGE_FORMAT_NONE && format != dataFormat) {
-
-		auto sizeRequired = CVTFFile::ComputeImageSize(w, h, 1, 1, format);
-		dest = (vlByte*)malloc(sizeRequired);
-
-		if (!CVTFFile::Convert((vlByte*)data, dest, w, h, dataFormat, format)) {
-			qWarning() << "Could not convert from" << NAMEOF_ENUM(dataFormat) << "to" << NAMEOF_ENUM(format) << ":" << util::get_last_vtflib_error();
-			free(dest);
-			return false;
-		}
-	}
-	else {
-		format = dataFormat;
-	}
-
-	// Create the file if we're told to do so
-	// This is done here because we don't actually know w/h until now
-	if (create) {
-		if (!file->Init(w, h, 1, 1, 1, format, vlTrue, m_mips <= 0 ? CVTFFile::ComputeMipmapCount(w, h, 1) : m_mips)) {
-			qWarning() << "Could not create VTF:" << util::get_last_vtflib_error();
-			free(dest);
-			return false;
-		}
-	}
-	file->SetData(1, 1, 1, 0, dest ? dest : (vlByte*)data);
-
-	return true;
-}
-
-bool VtfConvertWorker::add_image_data(
-		const std::filesystem::path& imageSrc, 
-		VTFLib::CVTFFile* file, 
-		VTFImageFormat format, 
-		bool create) {
-	// Load the image
-	auto image = imglib::Image::load(imageSrc);
-	if (!image)
-		return false;
-
-	// If width and height are specified, resize in place
-	if (m_height != -1 && m_width != -1) {
-		if (!image->resize(m_width, m_height))
-			return false;
-	}
-
-	// Add the raw image data
-	return add_image_data_raw(
-		file, image->data(), format, image->vtf_format(), image->width(), image->height(), create);
-}
-
-bool VtfConvertWorker::process_file(
-  QString assetPackPath,
-  const std::filesystem::path& srcFile,
-  const std::filesystem::path& outputVtf,
-  const std::filesystem::path& outputVmt) {
-
-	const std::string formatStr = "DXT1";
-	const auto srgb = false;
-	const auto thumbnail = true;
-	const auto verStr = "";
-	const auto isNormal = false;
-
-	auto nomips = false;
-	m_mips = 10;
-
-	m_width = 512;
-	m_height = 512;
-
-	if (!std::filesystem::exists(srcFile)) {
-		std::cerr << "Could not open " << srcFile << ": file does not exist\n";
-		return false;
-	}
-
-	if(srcFile.filename().extension() != ".png") {
-		std::cerr << "Can only convert PNG files\n";
-		return false;
-	}
-
-	bool isvtf = false;
-
-	// If an out file name is not provided, we need to build our own
-	// if (outputVtf.empty()) {
-	// 	outFile = srcFile.parent_path() / srcFile.filename().replace_extension(".vtf");
-	// }
-	// else {
-	// 	outFile = srcFile.parent_path() / outputVtf;
-	// }
-
-	auto format = ImageFormatFromUserString(formatStr.c_str());
-	auto vtfFile = std::make_unique<CVTFFile>();
-
-	// We will choose the best format to operate on here. This simplifies later code and lets us avoid extraneous
-	// conversions
-	auto formatInfo = CVTFFile::GetImageFormatInfo(format);
-	imglib::ChannelType procChanType = imglib::UInt8;
-	const auto procFormat = IMAGE_FORMAT_DXT1;
-	// @TODO: fix mipmaps
-	// const auto procFormat = [formatInfo, &procChanType]() -> VTFImageFormat
-	// {
-	// 	auto maxBpp = std::max(
-	// 		std::max(formatInfo.uiRedBitsPerPixel, formatInfo.uiGreenBitsPerPixel),
-	// 		std::max(formatInfo.uiBlueBitsPerPixel, formatInfo.uiAlphaBitsPerPixel));
-	// 	if (maxBpp > 16) {
-	// 		procChanType = imglib::Float;
-	// 		return IMAGE_FORMAT_RGBA32323232F;
-	// 	}
-	// 	else if (maxBpp > 8) {
-	// 		procChanType = imglib::UInt16;
-	// 		return IMAGE_FORMAT_RGBA16161616F;
-	// 	}
-	// 	else {
-	// 		procChanType = imglib::UInt8;
-	// 		return IMAGE_FORMAT_RGBA8888;
-	// 	}
-	// }();
-
-	// If we're processing a VTF, let's add that VTF image data
-	size_t initialSize = 0;
-
-  	// Add standard image data
-	if (!add_image_data(srcFile, vtfFile.get(), procFormat, true)) {
-		std::cerr << "Could not add image data from file " << srcFile << "\n";
-		return false;
-	}
-
-	// Set the properties based on user input
-	if (!set_properties(vtfFile.get())) {
-		std::cerr << "Could not set properties on VTF\n";
-		return false;
-	}
-
-	// Generate thumbnail
-	if (thumbnail && !vtfFile->GenerateThumbnail(srgb)) {
-		// std::cerr << fmt::format("Could not generate thumbnail: {}\n", util::get_last_vtflib_error());
-		return false;
-	}
-
-	// Generate mips
-	if (!vtfFile->GenerateMipmaps(MIPMAP_FILTER_CATROM, srgb)) {
-		std::cerr << "Could not generate mipmaps!\n";
-		return false;
-	}
-
-	// Convert to desired image format
-	if (vtfFile->GetFormat() != format && !vtfFile->ConvertInPlace(format)) {
-		// std::cerr << fmt::format("Could not convert image data to {}: {}\n", formatStr, util::get_last_vtflib_error());
-		return false;
-	}
-
-	// Save to disk finally
-	if (!vtfFile->Save(outputVtf.string().c_str())) {
-		qDebug() << "Could not save file" << outputVtf.string() << ":" << util::get_last_vtflib_error();
-		return false;
-	}
-
-	// write a basic VMT
-	QString filename = QString::fromStdString(outputVtf.filename());
-	filename = filename.replace(".vtf", "");
-	QString vmt = "\"LightmappedGeneric\"\n" \
-		"{\n" \
-		"\"$baseTexture\" \"%1/%2\"\n" \
-		"\"$surfaceprop\" \"brick\"\n" \
-		"}\n";
-	vmt = vmt.replace("%1", assetPackPath);
-	vmt = vmt.replace("%2", filename);
-
-    QFile file(outputVmt);
-    if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        QTextStream out(&file);
-        out << vmt;
-        file.close();
+    if (!path_input_image.exists()) {
+      qWarning() << "vtf convert: input path does not exist:" << path_input_image.absoluteFilePath();
     }
-	file.close();
 
-	return true;
-}
+    auto path_output_vtf_str = path_output_vtf.absoluteFilePath().toStdString();
+    auto path_output_vmt_str = path_output_vmt.absoluteFilePath().toStdString();
 
-VtfConvertJob::VtfConvertJob(
-	QList<QSharedPointer<Texture>> textures,
-	QString output_dir,
-	QObject *parent) : 
-		m_textures(textures),
-		m_output_dir(output_dir),
-		QObject(parent) {
+    qDebug() << "generating vtf/vmt for" << texture_name;
 
-	m_num_textures = m_textures.size();
-	qDebug() << "VtfConvertJob" << m_num_textures << "textures";
-
-	// create necessary directories
-	QStringList dirs_created = {};
-	for(const auto &tex: textures) {
-		auto path_relative = tex->assetPack()->dir();
-		QDir dir(m_output_dir + QDir::separator() + path_relative);
-		if (!dirs_created.contains(dir.absolutePath()) && !QDir(dir).exists()) {
-			dir.mkpath(".");
-			dirs_created << dir.absolutePath();
-		}
-	}
-
-	// 6 threads
-	unsigned int threads = 6;
-	int baseSize = m_num_textures / threads;       // Base size for each segment
-	int remainder = m_num_textures % threads;      // Remaining items to distribute
-
-	int segmentSize[threads];
-	for (int i = 0; i < threads; ++i) {
-		segmentSize[i] = baseSize + (i < remainder ? 1 : 0);
-	}
-
-	QList<QSharedPointer<Texture>> a;
-	QList<QSharedPointer<Texture>> b;
-	QList<QSharedPointer<Texture>> c;
-	QList<QSharedPointer<Texture>> d;
-	QList<QSharedPointer<Texture>> e;
-	QList<QSharedPointer<Texture>> f;
-
-	// distribute
-	int index = 0;
-	for (int i = 0; i < threads; ++i) {
-		for (int j = 0; j < segmentSize[i]; ++j) {
-			if (i == 0) a.append(m_textures.at(index));
-			else if (i == 1) b.append(m_textures.at(index));
-			else if (i == 2) c.append(m_textures.at(index));
-			else if (i == 3) d.append(m_textures.at(index));
-			else if (i == 4) e.append(m_textures.at(index));
-			else f.append(m_textures.at(index));
-			++index;
-		}
-	}
-
-	// create threads & start
-	for(const QList<QSharedPointer<Texture>> &collection: {a, b, c, d, e, f}) {
-		if(!collection.isEmpty()) {
-			auto thread = new VtfConvertThread();
-			connect(thread, &VtfConvertThread::logMessage, this, &VtfConvertJob::logMessage);
-			connect(thread, &VtfConvertThread::finished, this, &VtfConvertJob::onThreadFinished);
-			connect(thread, &VtfConvertThread::iterationFinished, this, &VtfConvertJob::onIterationFinished);
-			connect(thread, &VtfConvertThread::finished, [this, thread]{
-				thread->deleteLater();
-			});
-
-			thread->setTextures(collection);
-			thread->setOutputDir(m_output_dir);
-			m_threads << thread;
-		}
-	}
-
-	qDebug() << "threads" << m_threads.size();
-    for (VtfConvertThread* thread : m_threads) {
-        if (thread) {
-			qDebug() << "starting thread";
-            thread->start();
-        }
+    QFile img_file(path_input_image.absoluteFilePath());
+    if (!img_file.open(QIODevice::ReadOnly)) {
+      qWarning() << "vtf convert: could not open:" << path_input_image.absoluteFilePath();
+      return false;
     }
-}
 
-void VtfConvertJob::onIterationFinished() {
-	m_iterations += 1;
+    QByteArray imageData = img_file.readAll();
+    img_file.close();
 
-	double _progress = 100 * (double(m_iterations) / double(m_num_textures));
-	emit progress((int)_progress);
-}
+    FILE *fp = fmemopen(imageData.data(), imageData.size(), "rb");
+    if (!fp) {
+      qWarning() << "vtf convert: could not fmemopen:" << path_input_image.absoluteFilePath();
+      return false;
+    }
 
-void VtfConvertJob::onThreadFinished() {
-	// qDebug() << "thread finished";
-	m_threads_finished += 1;
-	if(m_threads_finished == m_threads.size()) {
-		qDebug() << "all threads done";
-		emit finished();
-	}
-}
+    const auto image = imglib::Image::load(fp);
+    if (!image) {
+      fclose(fp);
+      qWarning() << "vtf convert: could not stb open:" << path_input_image.absoluteFilePath();
+      return false;
+    }
 
+    fclose(fp);
+
+    if (image->m_height == -1 || image->m_width == -1) {
+      qWarning() << "vtf convert: could not stb open, bad width or height:" << path_input_image.absoluteFilePath();
+      return false;
+    }
+
+    bool height_2 = image->m_height > 0 && (image->m_height & (image->m_height - 1)) == 0;
+    bool width_2 = image->m_width > 0 && (image->m_width & (image->m_width - 1)) == 0;
+    if (!height_2 && !width_2) {
+      qWarning() << "vtf convert: bad width or height, not in power of two:" << path_input_image.absoluteFilePath();
+      return false;
+    }
+
+    constexpr int target_width = 512;
+    int target_height = (image->m_height * target_width) / image->m_width;
+
+    if (image->m_height != target_height || image->m_width != target_width) {
+      if (!image->resize(target_width, target_height))
+        return false;
+    }
+
+    auto format = diffuse->isAlpha ? ImageFormatFromUserString("DXT5") : ImageFormatFromUserString("DXT1");
+    const auto vtfFile = std::make_unique<CVTFFile>();
+    const int w = image->m_width;
+    const int h = image->m_height;
+    const auto srgb = true;
+
+    vlByte *dest = nullptr;
+
+    if (format != IMAGE_FORMAT_NONE && format != image->vtf_format()) {
+      const auto sizeRequired = CVTFFile::ComputeImageSize(w, h, 1, 1, format);
+      dest = static_cast<vlByte *>(malloc(sizeRequired));
+
+      if (!CVTFFile::Convert((vlByte *) image->data(), dest, w, h, image->vtf_format(), format)) {
+        qWarning() << "Could not convert from" << NAMEOF_ENUM(image->vtf_format()) << "to" << NAMEOF_ENUM(format) << ":"
+                   << util::get_last_vtflib_error();
+        free(dest);
+        return false;
+      }
+    } else {
+      format = image->vtf_format();
+    }
+
+    VTFLib::CVTFFile *file = vtfFile.get();
+    auto mips_computed = CVTFFile::ComputeMipmapCount(w, h, 1);
+    if (!file->Init(w, h, 1, 1, 1, format, vlTrue, mips_computed)) {
+      qWarning() << "Could not create VTF:" << util::get_last_vtflib_error();
+      free(dest);
+      return false;
+    }
+
+    file->SetData(1, 1, 1, 0, dest ? dest : (vlByte *) image->data());
+
+    constexpr int majorVer = 7;
+    constexpr int minorVer = 2;
+    constexpr int compressionLevel = 0;
+
+    vtfFile->SetVersion(majorVer, minorVer);
+    if (!vtfFile->SetAuxCompressionLevel(compressionLevel) && compressionLevel != 0) {
+      qWarning() << "Could not set compression level to" << compressionLevel;
+      return false;
+    }
+
+    vtfFile->SetFlag(TEXTUREFLAGS_SRGB, true);
+    vtfFile->SetFlag(TEXTUREFLAGS_ANISOTROPIC, true);
+
+    auto mipcount = vtfFile->GetMipmapCount();
+    if (mipcount == 1)
+      vtfFile->SetFlag(TEXTUREFLAGS_NOMIP, true);
+
+    vtfFile->ComputeReflectivity();
+
+    bool thumbnail = true;
+    if (thumbnail && !vtfFile->GenerateThumbnail(srgb)) {
+      qWarning() << "could not generate thumbnail" << texture_name;
+    }
+
+    if (!vtfFile->GenerateMipmaps(MIPMAP_FILTER_CUBIC, srgb)) {
+      qWarning() << "Could not generate mipmaps!" << texture_name;
+    }
+
+    if (vtfFile->GetFormat() != format && !vtfFile->ConvertInPlace(format)) {
+      qWarning() << "Could not convert image data to the desired format";
+      return false;
+    }
+
+    // write
+    if (!vtfFile->Save(path_output_vtf_str.c_str())) {
+      qWarning() << "Could not save file" << path_output_vtf.absolutePath() << ":" << util::get_last_vtflib_error();
+      return false;
+    }
+
+    QString filename = path_output_vtf.fileName();
+    filename = filename.replace(".vtf", "");
+    QString vmt = "\"LightmappedGeneric\"\n"
+                  "{\n"
+                  "\"$baseTexture\" \"%1/%2\"\n"
+                  "\"$surfaceprop\" \"brick\"\n"
+                  "\"$translucent\" %3\n"
+                  "}\n";
+    vmt = vmt.replace("%1", asset_pack_name);
+    vmt = vmt.replace("%2", diffuse->name_original);
+    vmt = vmt.replace("%3", diffuse->isAlpha ? "1" : "0");
+
+    QFile file_vmt(path_output_vmt.absoluteFilePath());
+    if (file_vmt.open(QIODevice::WriteOnly | QIODevice::Text)) {
+      QTextStream out(&file_vmt);
+      out << vmt;
+      file_vmt.close();
+    }
+    file_vmt.close();
+    return true;
+  }
 }

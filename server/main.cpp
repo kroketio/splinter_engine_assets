@@ -1,6 +1,7 @@
 #include <QCoreApplication>
 #include <QResource>
 #include <QDirIterator>
+#include <QBuffer>
 
 #if defined(Q_OS_WIN)
 #include <windows.h>
@@ -14,6 +15,16 @@
 #include "ctx.h"
 
 #include <QCoreApplication>
+
+#include "VTFLib.h"
+#include "VTFFormat.h"
+
+#include "lib/vtf/common/image.hpp"
+#include "lib/vtf/common/enums.hpp"
+#include "lib/vtf/common/util.hpp"
+#include "lib/vtf/common/vtftools.hpp"
+
+using namespace VTFLib;
 
 int main(int argc, char *argv[]) {
   Q_INIT_RESOURCE(assets);

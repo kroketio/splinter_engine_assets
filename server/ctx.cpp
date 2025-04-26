@@ -12,6 +12,7 @@
 #include "lib/zlib_compressor.h"
 #include "lib/file_packer.h"
 #include "lib/godot.h"
+#include "lib/vtf/vtf.h"
 
 using namespace std::chrono;
 
@@ -22,6 +23,7 @@ Ctx::Ctx() {
   assetPackManager = new AssetPackManager(this);
   config()->set(ConfigKeys::CacheDir, globals::cacheDirectory);
 
+  globals::FUNC_GENERATE_VMT_VTF_FILES = vtf::generate_vmt_vtf_files;
   createConfigDirectory(QStringList({
     globals::configDirectory,
     globals::cacheDirectory,

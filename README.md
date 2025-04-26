@@ -2,11 +2,11 @@
 
 Asset server for the Splinter game engine in C++.
 
-Optimized to index, search through, and serve >100k `.png`s.
+Optimized to index, search through, and serve large amounts of textures/models/etc.
 
 Bad code, undocumented, and work-in-progress.
 
-`sudo apt install -y libpng pkg-config cmake qt6-base-dev qt6-multimedia-dev qt6-websockets-dev qt6-httpserver-dev`
+`sudo apt install -y libpng pkg-config cmake qt6-base-dev qt6-multimedia-dev qt6-websockets-dev qt6-httpserver-dev zip unzip`
 
 #### systemd service
 

@@ -8,21 +8,6 @@
 
 #include "lib/godot.h"
 
-// float metallic = 0.05f,
-// float metallic_specular = 0.1f,
-// float roughness = 0.86f,
-// float normal_scale = 0.6f,
-// float ao_light_affect = 1.0f,
-// const QString &uv1_scale = "Vector3(2, 2, 2)"
-
-// QMap<QString, QString> textureRoles {
-//     {"Color", "albedo_texture"},
-//     {"AmbientOcclusion", "ao_texture"},
-//     {"Metalness", "metallic_texture"},
-//     {"NormalGL", "normal_texture"},
-//     {"Roughness", "roughness_texture"}
-// };
-
 namespace godot {
   QMap<QString, QMap<QString, QString>> resourceTemplates = {};
   QMap<QString, QString> nameToResourceTemplateLookup = {};
@@ -104,6 +89,7 @@ namespace godot {
     const QString asset_pack = tex->asset_pack()->name();
     QString texname = tex->name;
 
+    bool isAlpha = diffuse->isAlpha();
     auto arm = tex->get_image(TextureImageType::arm, tsize);
     auto spec = tex->get_image(TextureImageType::specular, tsize);
     auto metal = tex->get_image(TextureImageType::metalness, tsize);
@@ -121,9 +107,6 @@ namespace godot {
     };
 
     QMap<TextureImageType, Resource> resource_ids;
-
-    // emission_enabled = true
-    // emission_texture = ExtResource("2_p2e4n")
 
     QString output;
     QTextStream out(&output);
@@ -259,6 +242,15 @@ namespace godot {
       if (texname.contains("skin"))
         options["subsurf_scatter_skin_mode"] = "true";
       options["subsurf_scatter_texture"] = QString("ExtResource(\"%1\")").arg(resource_ids[TextureImageType::scattering].uid);
+    }
+
+    if (isAlpha) {
+      // alpha from diffuse, A channel
+      options["transparency"] = "2";
+      options["alpha_scissor_threshold"] = "0.5";
+      options["alpha_antialiasing_mode"] = "1";
+      options["alpha_antialiasing_edge"] = "0.01";
+      options["cull_mode"] = "2";
     }
 
     for (const auto &[key, value] : options.toStdMap()) {

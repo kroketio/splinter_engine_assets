@@ -144,7 +144,7 @@ namespace imglib
 			return static_cast<T*>(m_data);
 		}
 
-	private:
+	public:
 		int m_width = 0;
 		int m_height = 0;
 		int m_frames = 0;	// If animated images, num frames

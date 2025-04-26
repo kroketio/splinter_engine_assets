@@ -8,6 +8,7 @@
 #include <QObject>
 #include <chrono>
 #include <utility>
+#include <functional>
 
 #include "../../server/external/VTFLib/thirdparty/include/Compressonator.h"
 #include "../lib/globals.h"
@@ -27,6 +28,7 @@ public:
   static TextureImage* fromPath(const QFileInfo &path);
 
   QString name;
+  QString name_original;
   QString name_technical;
   TextureImageExt ext;
   QString variant;
@@ -48,7 +50,10 @@ public:
 
   QSize dimensions;
   QFileInfo path;
+  AssetPack* pack = nullptr;
   QFileInfo path_thumbnail();
+  QFileInfo path_vmt() const;
+  QFileInfo path_vtf() const;
   QString get_ext() const {
     if(ext == TextureImageExt::PNG) return "png";
     else if(ext == TextureImageExt::JPG) return "jpg";
@@ -62,7 +67,7 @@ public:
   void metadata_generate();
 
   void ensure_thumbnail(bool force, QString &err);
-
+  void setPack(AssetPack* p_pack);
   void setPath(const QFileInfo &path);
   void setTextureImageType(TextureImageType _type);
 
