@@ -89,7 +89,7 @@ namespace godot {
     const QString asset_pack = tex->asset_pack()->name();
     QString texname = tex->name;
 
-    bool isAlpha = diffuse->isAlpha();
+    bool isAlpha = diffuse->isAlpha;
     auto arm = tex->get_image(TextureImageType::arm, tsize);
     auto spec = tex->get_image(TextureImageType::specular, tsize);
     auto metal = tex->get_image(TextureImageType::metalness, tsize);
