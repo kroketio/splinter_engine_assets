@@ -1,8 +1,23 @@
-## Asset Server
+## Client/Server for assets
 
-Asset server for the Splinter game engine in C++.
+Asset management for the Splinter game engine.
+
+### Server
 
 Optimized to index, search through, and serve large amounts of textures/models/etc.
+
+Splinter Engine connects to the asset server.
+
+### Client
+
+Standalone client GUI:
+
+- Asset browser
+- built-in 3d engine to view assets
+- apply materials (for level creation)
+- manipulate/create materials
+
+### Notes
 
 Bad code, undocumented, and work-in-progress.
 
