@@ -1,3 +1,5 @@
+set(CMAKE_CXX_STANDARD 20)
+
 file(GLOB SOURCE_FILES
     "*.h"
     "*.cpp"
@@ -23,8 +25,8 @@ file(GLOB SOURCE_FILES
 #    "assets/plaster_damaged.tres"
 #    "assets/stone.tres"
 #    "assets/tiles.tres"
-#
 #)
+
 qt_add_resources(GENERATED_RESOURCES assets.qrc)
 add_library(shared STATIC
     ${SOURCE_FILES}
