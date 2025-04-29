@@ -9,6 +9,8 @@
 #include "spot_light.h"
 //#include <Model.h>
 
+#include "lib/vmf.h"
+
 namespace engine {
   class SceneLoader;
   class SceneSaver;
@@ -21,6 +23,8 @@ public:
     Scene(const Scene& scene);
     ~Scene();
 
+    bool loadVMF(const std::filesystem::path& path);
+
     bool setCamera(Camera* camera);
     bool addGridline(Gridline* gridline);
     bool addLight(AbstractLight* light);
@@ -28,6 +32,7 @@ public:
     bool addDirectionalLight(DirectionalLight* light);
     bool addPointLight(PointLight* light);
     bool addSpotLight(SpotLight* light);
+    bool addMesh(Mesh* mesh);
     // bool addModel(Model* model);
 
     bool removeGridline(QObject* gridline);
@@ -46,13 +51,14 @@ public:
     const QVector<SpotLight*>& spotLights() const;
     // const QVector<Model*>& models() const;
 
-    signals:
-        void cameraChanged(Camera* camera);
+  signals:
+    void cameraChanged(Camera* camera);
     void gridlineAdded(Gridline* gridline);
     void gridlineRemoved(QObject* object);
     void lightAdded(AbstractLight* light);
     void lightRemoved(QObject* object);
     // void modelAdded(Model* model);
+    void meshAdded(Mesh* mesh);
     void modelRemoved(QObject* object);
 
   protected:
@@ -67,6 +73,10 @@ public:
     QVector<PointLight*> m_pointLights;
     QVector<SpotLight*> m_spotLights;
     // QVector<Model*> m_models;
+    QVector<Mesh*> m_meshes;
+
+    std::filesystem::path path_vmf;
+    std::optional<vmfpp::VMF> vmf;
 
     int m_gridlineNameCounter;
     int m_ambientLightNameCounter;

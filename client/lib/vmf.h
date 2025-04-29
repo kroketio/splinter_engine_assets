@@ -12,7 +12,8 @@ public:
   explicit QVMF(QString dir, QObject *parent = nullptr);
 
   QString path_vmf;
+  std::optional<vmfpp::VMF> vmf;
 
-  void parse() const;
-  bool QVMF::save(const std::filesystem::path& path) const;
+  bool open(const std::filesystem::path& path);
+  bool save(const std::filesystem::path& path) const;
 };

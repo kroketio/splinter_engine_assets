@@ -1,3 +1,6 @@
 [submodule "external/VTFLib"]
 	path = server/external/VTFLib
 	url = https://github.com/StrataSource/VTFLib.git
+[submodule "client/engine/assimp"]
+	path = client/engine/assimp
+	url = https://github.com/assimp/assimp.git

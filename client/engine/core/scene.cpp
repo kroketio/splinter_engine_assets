@@ -39,9 +39,93 @@ namespace engine {
     //        addModel(new Model(*scene.m_models[i]));
   }
 
+  bool Scene::loadVMF(const std::filesystem::path& path) {
+    path_vmf = path;
+    qDebug() << "vmf open" << path.string();
+
+    vmf = vmfpp::VMF::openFile(path.string());
+    if (!vmf.has_value()) {
+      qWarning() << "vmf open failed; faulty vmf?";
+      return false;
+    }
+
+    vmfpp::Node* node_ptr = reinterpret_cast<vmfpp::Node*>(&*vmf);
+    for (const auto &node: node_ptr->getChildren()) {
+      if (node.first != "world") continue;
+      if (node.second.size() <= 0) continue;
+
+      auto solids = node.second[0].getChild("solid");
+      for (const auto& solid: solids) {
+        auto bla_solid = solid_struct{};
+        bla_solid.id = stoi(solid.getValue("id")[0]);
+        auto sides = solid.getChild("side");
+
+        for (const auto& side: sides) {
+          auto bla_side = side_struct{};
+
+          auto vaxis = side.getValue("uaxis")[0];
+          auto uaxis = side.getValue("vaxis")[0];
+          bla_side.rotation = stoi(side.getValue("rotation")[0]);
+          bla_side.id = stoi(side.getValue("id")[0]);
+          bla_side.material = side.getValue("material")[0];
+          // auto plane = side.getValue("plane")[0];
+
+          auto side_childs = side.getChildren();
+          for (const auto& side_child: side_childs) {
+            if (side_child.first == "vertices_plus") {
+              auto vert = side_child.second[0].getValue("v");
+
+              bla_side.vertices_plus = [vert] {
+                std::array<QVector3D, 4> arr;
+                for (size_t i = 0; i < 4; ++i) {
+                  float x = 0.0f, y = 0.0f, z = 0.0f;
+                  const char* cstr = vert[i].c_str();
+                  char* end;
+                  x = std::strtof(cstr, &end);
+                  cstr = end;
+                  y = std::strtof(cstr, &end);
+                  cstr = end;
+                  z = std::strtof(cstr, &end);
+                  arr[i] = QVector3D(x / 10, y / 10, z / 10);
+                }
+                return arr;
+              }();
+            }
+          }
+
+          bla_solid.sides.emplace_back(bla_side);
+
+          auto mesh = engine::JustAQuad::from(bla_side);
+
+          engine::Material* material = new engine::Material;
+          aiColor4D color; float value; aiString aiStr;
+          material->setObjectName("Untitled");
+          material->setDiffuse(100.0f);
+          material->setColor(QVector3D(100.0f, 100.0f, 100.0f) / material->diffuse());
+          material->setDiffuse(100.0f);
+          mesh->setMaterial(material);
+
+          this->meshAdded(mesh);
+        }
+
+
+        int we = 1;
+      }
+    }
+
+    return true;
+  }
+
   Scene::~Scene() {
 
     qDebug() << "Scene" << this->objectName() << "is destroyed";
+  }
+
+  bool Scene::addMesh(Mesh* mesh) {
+    m_meshes.push_back(mesh);
+    mesh->setParent(this);
+    mesh->setObjectName("randommesh");
+    emit meshAdded(mesh);
   }
 
   bool Scene::setCamera(Camera * camera) {

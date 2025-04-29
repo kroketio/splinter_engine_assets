@@ -72,7 +72,8 @@ namespace engine {
 
     connect(m_host, SIGNAL(gridlineAdded(Gridline*)), this, SLOT(gridlineAdded(Gridline*)));
     connect(m_host, SIGNAL(lightAdded(AbstractLight*)), this, SLOT(lightAdded(AbstractLight*)));
-    connect(m_host, SIGNAL(modelAdded(Model*)), this, SLOT(modelAdded(Model*)));
+    // connect(m_host, SIGNAL(modelAdded(Model*)), this, SLOT(modelAdded(Model*)));
+    connect(m_host, SIGNAL(meshAdded(Mesh*)), this, SLOT(meshAdded(Mesh*)));
     connect(m_host, SIGNAL(destroyed(QObject*)), this, SLOT(hostDestroyed(QObject*)));
   }
 
@@ -233,12 +234,11 @@ namespace engine {
   void OpenGLScene::meshAdded(Mesh* mesh) {
     // const auto mat = new Material(QVector3D(1.0f, 1.0f, 1.0f), 0, 0.6, 0, this);
     // const auto tex = QSharedPointer<engine::Texture>(new Texture(Texture::Diffuse));
-    //
     // QImage img("/home/dsc/texturefun/blenderkit/blenderkit_1k/RedBrick21670_1K_Color.png");
     // tex->setImage(img);
     // mat->setDiffuseTexture(tex);
-    //
     // mesh->setMaterial(mat);
+
     int index = m_normalMeshes.size();
     int maxColumns = 10, cellSize = 1;
     int x = (index % maxColumns) * cellSize;

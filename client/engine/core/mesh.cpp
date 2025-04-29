@@ -1,3 +1,5 @@
+#include <QBuffer>
+
 #include "engine/core/mesh.h"
 //#include <AbstractGizmo.h>
 #include "abstract_light.h"
@@ -42,6 +44,37 @@ namespace engine {
     qDebug().nospace() << tab(l + 1) << "Scaling:  " << m_scaling;
     qDebug("%s%lld vertices, %lld indices, %d material",
            tab(l + 1), m_vertices.size(), m_indices.size(), m_material != 0);
+
+    QVector3D position;
+    QVector3D normal;
+    QVector3D tangent;
+    QVector3D bitangent;
+    QVector2D texCoords;
+
+    QByteArray byteArray;
+    QBuffer buffer(&byteArray);
+
+    buffer.open(QIODevice::WriteOnly);
+    QTextStream out(&buffer);
+
+    for (int i = 0; i != m_vertices.size(); i++) {
+      qDebug() << QString("[%1] vertices").arg(QString::number(i));
+      qDebug() << "bitangent" << m_vertices[i].bitangent;
+      qDebug() << "position" << m_vertices[i].position;
+      qDebug() << "normal" << m_vertices[i].normal;
+      qDebug() << "tangent" << m_vertices[i].tangent;
+      qDebug() << "texCoords" << m_vertices[i].texCoords;
+    }
+
+    qDebug() << "=======================";
+
+    for (int i = 0; i != m_indices.size(); i++) {
+      qDebug() << QString("[%1] m_indices").arg(QString::number(i));
+      qDebug() << m_indices[i];
+    }
+
+    buffer.close();
+
   }
 
   void Mesh::dumpObjectTree(int l) {
@@ -254,7 +287,81 @@ namespace engine {
     }
   }
 
-  QDataStream & operator>>(QDataStream & in, Mesh::MeshType & meshType) {
+  engine::Mesh* Mesh::loadMesh(const aiMesh* aiMeshPtr) {
+    auto* mesh = new engine::Mesh;
+    mesh->setObjectName(aiMeshPtr->mName.length ? aiMeshPtr->mName.C_Str() : "Untitled");
+
+    for (uint32_t i = 0; i < aiMeshPtr->mNumVertices; i++) {
+      engine::Vertex vertex;
+      if (aiMeshPtr->HasPositions())
+        vertex.position = QVector3D(aiMeshPtr->mVertices[i].x, aiMeshPtr->mVertices[i].y, aiMeshPtr->mVertices[i].z);
+      if (aiMeshPtr->HasNormals())
+        vertex.normal = QVector3D(aiMeshPtr->mNormals[i].x, aiMeshPtr->mNormals[i].y, aiMeshPtr->mNormals[i].z);
+      if (aiMeshPtr->HasTangentsAndBitangents()) {
+        // Use left-handed tangent space
+        vertex.tangent = QVector3D(aiMeshPtr->mTangents[i].x, aiMeshPtr->mTangents[i].y, aiMeshPtr->mTangents[i].z);
+        vertex.bitangent = QVector3D(aiMeshPtr->mBitangents[i].x, aiMeshPtr->mBitangents[i].y, aiMeshPtr->mBitangents[i].z);
+
+        // Gram-Schmidt process, re-orthogonalize the TBN vectors
+        vertex.tangent -= QVector3D::dotProduct(vertex.tangent, vertex.normal) * vertex.normal;
+        vertex.tangent.normalize();
+
+        // Deal with mirrored texture coordinates
+        if (QVector3D::dotProduct(QVector3D::crossProduct(vertex.tangent, vertex.normal), vertex.bitangent) < 0.0f)
+          vertex.tangent = -vertex.tangent;
+      }
+      if (aiMeshPtr->HasTextureCoords(0))
+        vertex.texCoords = QVector2D(aiMeshPtr->mTextureCoords[0][i].x, aiMeshPtr->mTextureCoords[0][i].y);
+      mesh->m_vertices.push_back(vertex);
+    }
+
+    for (uint32_t i = 0; i < aiMeshPtr->mNumFaces; i++)
+      for (uint32_t j = 0; j < 3; j++)
+        mesh->m_indices.push_back(aiMeshPtr->mFaces[i].mIndices[j]);
+
+    QVector3D center = mesh->centerOfMass();
+
+    for (int i = 0; i < mesh->m_vertices.size(); i++)
+      mesh->m_vertices[i].position -= center;
+
+
+
+    mesh->m_position = center;
+    return mesh;
+  }
+
+  // Material * ModelLoader::loadMaterial(const aiMaterial * aiMaterialPtr) {
+  //   Material* material = new Material;
+  //   aiColor4D color; float value; aiString aiStr;
+  //
+  //   if (AI_SUCCESS == aiMaterialPtr->Get(AI_MATKEY_NAME, aiStr))
+  //     material->setObjectName(aiStr.length ? aiStr.C_Str() : "Untitled");
+  //   if (AI_SUCCESS == aiMaterialPtr->Get(AI_MATKEY_COLOR_AMBIENT, color))
+  //     material->setAmbient((color.r + color.g + color.b) / 3.0f);
+  //   if (AI_SUCCESS == aiMaterialPtr->Get(AI_MATKEY_COLOR_DIFFUSE, color)) {
+  //     material->setDiffuse((color.r + color.g + color.b) / 3.0f);
+  //     material->setColor(QVector3D(color.r, color.g, color.b) / material->diffuse());
+  //   }
+  //   if (AI_SUCCESS == aiMaterialPtr->Get(AI_MATKEY_COLOR_SPECULAR, color))
+  //     material->setSpecular((color.r + color.g + color.b) / 3.0f);
+  //   if (AI_SUCCESS == aiMaterialPtr->Get(AI_MATKEY_SHININESS, value) && !qFuzzyIsNull(value))
+  //     material->setShininess(value);
+  //   if (AI_SUCCESS == aiMaterialPtr->GetTexture(aiTextureType_DIFFUSE, 0, &aiStr)) {
+  //     QString filePath = m_dir.absolutePath() + '/' + QString(aiStr.C_Str()).replace('\\', '/');
+  //     material->setDiffuseTexture(textureLoader.loadFromFile(Texture::Diffuse, filePath));
+  //   }
+  //   if (AI_SUCCESS == aiMaterialPtr->GetTexture(aiTextureType_SPECULAR, 0, &aiStr)) {
+  //     QString filePath = m_dir.absolutePath() + '/' + QString(aiStr.C_Str()).replace('\\', '/');
+  //     material->setSpecularTexture(textureLoader.loadFromFile(Texture::Specular, filePath));
+  //   }
+  //   if (AI_SUCCESS == aiMaterialPtr->GetTexture(aiTextureType_HEIGHT, 0, &aiStr)) {
+  //     QString filePath = m_dir.absolutePath() + '/' + QString(aiStr.C_Str()).replace('\\', '/');
+  //     material->setBumpTexture(textureLoader.loadFromFile(Texture::Bump, filePath));
+  //   }
+  //   return material;
+  // }
+
+  QDataStream & operator>>(QDataStream & in, engine::Mesh::MeshType & meshType) {
     qint32 t;
     in >> t;
     if (t == 0)

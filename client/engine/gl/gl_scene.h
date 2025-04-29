@@ -12,7 +12,6 @@ namespace engine {
 
 public:
     OpenGLScene(Scene* scene);
-
     Scene* host() const;
 
     OpenGLMesh* pick(uint32_t pickingID);
@@ -33,12 +32,14 @@ public:
     QVector<OpenGLMesh*> m_gizmoMeshes, m_gridlineMeshes, m_lightMeshes, m_normalMeshes;
     static OpenGLUniformBufferObject *m_cameraInfo, *m_lightInfo;
 
-    private slots:
-        // void gizmoAdded(AbstractGizmo* gizmo);
-        void gridlineAdded(Gridline* gridline);
+  public slots:
+    void meshAdded(Mesh* mesh);
+
+  private slots:
+    // void gizmoAdded(AbstractGizmo* gizmo);
+    void gridlineAdded(Gridline* gridline);
     void lightAdded(AbstractLight* light);
     // void modelAdded(Model* model);
-    void meshAdded(Mesh* mesh);
     void hostDestroyed(QObject* host);
   };
 }

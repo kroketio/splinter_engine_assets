@@ -20,7 +20,23 @@ file(GLOB SOURCE_FILES
         "lib/vmfpp/structs/*.cpp"
 )
 
-add_executable(client ${SOURCE_FILES})
+set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(ASSIMP_INSTALL OFF CACHE BOOL "" FORCE)
+set(ASSIMP_WARNINGS_AS_ERRORS OFF CACHE BOOL "" FORCE)
+set(ASSIMP_INJECT_DEBUG_POSTFIX OFF CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_ZLIB OFF CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_ALL_EXPORTERS_BY_DEFAULT OFF CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_ALL_IMPORTERS_BY_DEFAULT OFF CACHE BOOL "" FORCE)
+set(ASSIMP_INSTALL_PDB OFF CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_ASSIMP_VIEW OFF CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_OBJ_IMPORTER ON CACHE BOOL "" FORCE)
+
+add_subdirectory(engine/assimp)
+
+qt_add_resources(RESOURCES engine/engine.qrc)
+add_executable(client ${SOURCE_FILES} ${RESOURCES})
+
+
 target_compile_options(client PRIVATE -Wno-deprecated-declarations)
 target_include_directories(client PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -39,4 +55,5 @@ target_link_libraries(client PUBLIC
         PNG::PNG
         ZLIB::ZLIB
         shared
+        assimp::assimp
 )

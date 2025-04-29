@@ -19,7 +19,10 @@
 #include <QFileDialog>
 
 #include "ctx.h"
+#include "engine/gl/gl_window.h"
 #include "lib/utils.h"
+
+#include "assimp/mesh.h"
 
 namespace Ui {
   class MainWindow;
@@ -33,6 +36,8 @@ Q_PROPERTY(int example_property MEMBER m_example_property NOTIFY example_propert
 
 public:
   explicit MainWindow(AppContext *ctx, QWidget *parent = nullptr);
+  void test();
+  engine::Mesh* loadMesh(const aiMesh * aiMeshPtr);
   ~MainWindow() override;
 
   qreal screenDpiRef;
@@ -58,7 +63,9 @@ private:
   QQuickWidget *m_quickWidget = nullptr;
 
   unsigned int m_example_property = 320;
-
   void createQml();
   void destroyQml();
+private:
+  engine::OpenGLWindow* m_glWindow;
+  engine::Scene* m_scene;
 };

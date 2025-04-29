@@ -5,14 +5,15 @@ namespace engine {
     setObjectName("Camera");
     reset();
 
-    setPosition(QVector3D(5, 5, 5));
+    // setPosition(QVector3D(5, 5, 5));
+    setPosition(QVector3D(704.0f, -256.0f, 0.0f));
     setParent(parent);
   }
 
   Camera::Camera(QVector3D position, QVector3D direction, QObject* parent): QObject(0) {
     setObjectName("Camera");
-    setMovingSpeed(0.1f);
-    setFieldOfView(45.0f);
+    setMovingSpeed(0.4f);
+    setFieldOfView(40.0f);
     setNearPlane(0.1f);
     setFarPlane(100000.0f);
     setPosition(position);
