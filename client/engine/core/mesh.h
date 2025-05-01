@@ -35,14 +35,14 @@ namespace engine {
     MeshType meshType() const;
     const QVector<Vertex> &vertices() const;
     const QVector<uint32_t> &indices() const;
-    Material *material() const;
+    QSharedPointer<Material> material() const;
 
     static Mesh *merge(const Mesh *mesh1, const Mesh *mesh2);
 
   public slots:
     void setMeshType(MeshType meshType);
     void setGeometry(const QVector<Vertex> &vertices, const QVector<uint32_t> &indices);
-    bool setMaterial(Material *newMaterial);
+    bool setMaterial(const QSharedPointer<Material>& newMaterial);
     void reverseNormals();
     void reverseTangents();
     void reverseBitangents();
@@ -50,16 +50,16 @@ namespace engine {
   signals:
     void meshTypeChanged(int meshType);
     void geometryChanged(const QVector<Vertex> &vertices, const QVector<uint32_t> &indices);
-    void materialChanged(Material *material);
+    void materialChanged(const QSharedPointer<Material> &material);
 
-  protected:
-    void childEvent(QChildEvent *event) override;
+  // protected:
+  //   void childEvent(QChildEvent *event) override;
 
   protected:
     MeshType m_meshType;
     QVector<Vertex> m_vertices;
     QVector<uint32_t> m_indices;
-    Material *m_material;
+    QSharedPointer<Material> m_material;
 
     friend ModelLoader;
   };
@@ -89,9 +89,12 @@ namespace engine {
 
       QVector3D edge1 = side.vertices_plus[1] - side.vertices_plus[0];
       QVector3D edge2 = side.vertices_plus[2] - side.vertices_plus[0];
-      QVector3D normal = QVector3D::normal(edge1, edge2);
-      QVector3D tangent = (side.vertices_plus[1] - side.vertices_plus[0]).normalized(); // X direction
-      QVector3D bitangent = QVector3D::crossProduct(normal, tangent).normalized(); // Y direction
+      // QVector3D normal = QVector3D::normal(edge1, edge2);
+      QVector3D normal{0.0f,  1.0f,  0.0f};
+      QVector3D tangent{0.0f,  0.0f,  1.0f};
+      QVector3D bitangent{0.0f,  0.0f,  1.0f};
+      //QVector3D tangent = (side.vertices_plus[1] - side.vertices_plus[0]).normalized(); // X direction
+      //QVector3D bitangent = QVector3D::crossProduct(normal, tangent).normalized(); // Y direction
 
       std::vector<QVector2D> coords = {
         QVector2D(0.0f,  0.0f),
@@ -102,11 +105,12 @@ namespace engine {
 
       int i = 0;
       for (const auto &vert : side.vertices_plus) {
+        int e = 1;
         quad->m_vertices.append(Vertex{
-            vert,
-          QVector3D(0.0f,  1.0f,  0.0f), // normal
-          QVector3D(1.0f,  0.0f,  0.0f), // tangent
-          QVector3D(0.0f,  0.0f,  1.0f), // bitangent
+          vert,
+          normal, // normal
+          tangent, // tangent
+          bitangent, // bitangent
           coords[i]
         });
         i += 1;

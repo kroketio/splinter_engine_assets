@@ -18,22 +18,42 @@ namespace engine {
 
   OpenGLUniformBufferObject *OpenGLMaterial::m_materialInfo = 0;
 
-  OpenGLMaterial::OpenGLMaterial(Material * material, QObject* parent): QObject(0) {
+  OpenGLMaterial::OpenGLMaterial(const QSharedPointer<Material> &material, QObject* parent): QObject(0) {
     m_host = material;
 
     this->diffuseTextureChanged(m_host->diffuseTexture());
     this->specularTextureChanged(m_host->specularTexture());
     this->bumpTextureChanged(m_host->bumpTexture());
 
-    connect(m_host, SIGNAL(diffuseTextureChanged(QSharedPointer<engine::Texture>)), this, SLOT(diffuseTextureChanged(QSharedPointer<engine::Texture>)));
-    connect(m_host, SIGNAL(specularTextureChanged(QSharedPointer<engine::Texture>)), this, SLOT(specularTextureChanged(QSharedPointer<engine::Texture>)));
-    connect(m_host, SIGNAL(bumpTextureChanged(QSharedPointer<engine::Texture>)), this, SLOT(bumpTextureChanged(QSharedPointer<engine::Texture>)));
-    connect(m_host, SIGNAL(destroyed(QObject*)), this, SLOT(hostDestroyed(QObject*)));
+    QWeakPointer weakMatPtr = m_host;
+    connect(this, &OpenGLMaterial::diffuseTextureChanged, this,
+            [weakMatPtr, this](const QSharedPointer<engine::Texture> &tex) {
+              if (auto host = weakMatPtr.toStrongRef())
+                this->diffuseTextureChanged(tex);
+            });
+
+    connect(this, &OpenGLMaterial::specularTextureChanged, this,
+            [weakMatPtr, this](const QSharedPointer<engine::Texture> &tex) {
+              if (auto host = weakMatPtr.toStrongRef())
+                this->specularTextureChanged(tex);
+            });
+
+    connect(this, &OpenGLMaterial::bumpTextureChanged, this,
+            [weakMatPtr, this](const QSharedPointer<engine::Texture> &tex) {
+              if (auto host = weakMatPtr.toStrongRef())
+                this->bumpTextureChanged(tex);
+            });
+
+    connect(this, &OpenGLMaterial::destroyed, this,
+            [weakMatPtr, this](QObject* obj) {
+              if (auto host = weakMatPtr.toStrongRef())
+                this->hostDestroyed(obj);
+            });
 
     setParent(parent);
   }
 
-  Material * OpenGLMaterial::host() const {
+  QSharedPointer<Material> OpenGLMaterial::host() const {
     return m_host;
   }
 

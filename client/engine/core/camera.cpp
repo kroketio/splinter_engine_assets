@@ -6,13 +6,14 @@ namespace engine {
     reset();
 
     // setPosition(QVector3D(5, 5, 5));
-    setPosition(QVector3D(704.0f, -256.0f, 0.0f));
+    // setPosition(QVector3D(704.0f, -256.0f, 0.0f));
+    setPosition(QVector3D(0.0f, 0.0f, 0.0f));
     setParent(parent);
   }
 
   Camera::Camera(QVector3D position, QVector3D direction, QObject* parent): QObject(0) {
     setObjectName("Camera");
-    setMovingSpeed(0.4f);
+    setMovingSpeed(0.2f * 70);
     setFieldOfView(40.0f);
     setNearPlane(0.1f);
     setFarPlane(100000.0f);
@@ -51,7 +52,7 @@ namespace engine {
 
   void Camera::turnLeft(float angle) {
     QMatrix4x4 mat;
-    mat.rotate(angle, QVector3D(0, 1, 0));
+    mat.rotate(angle, QVector3D(0, 0, 1));
     setDirection(mat * m_direction);
   }
 
@@ -124,7 +125,7 @@ namespace engine {
   // Public slots
 
   void Camera::reset() {
-    setMovingSpeed(0.1f);
+    setMovingSpeed(0.2f * 70);
     setFieldOfView(45.0f);
     setAspectRatio(1.0f);
     setNearPlane(0.1f);
@@ -189,7 +190,7 @@ namespace engine {
   // Private functions
 
   void Camera::setUpVector() {
-    QVector3D t = QVector3D::crossProduct(m_direction, QVector3D(0, 1, 0));
+    QVector3D t = QVector3D::crossProduct(m_direction, QVector3D(0, 0, 1));
     m_up = QVector3D::crossProduct(t, m_direction);
   }
 }

@@ -86,30 +86,47 @@ namespace engine {
                   y = std::strtof(cstr, &end);
                   cstr = end;
                   z = std::strtof(cstr, &end);
-                  arr[i] = QVector3D(x / 10, y / 10, z / 10);
+                  arr[i] = QVector3D(x, y, z);
+                  qDebug() << arr[i];
                 }
                 return arr;
               }();
+
+              // break;
             }
+
+            // break;
           }
 
           bla_solid.sides.emplace_back(bla_side);
 
+
           auto mesh = engine::JustAQuad::from(bla_side);
 
-          engine::Material* material = new engine::Material;
-          aiColor4D color; float value; aiString aiStr;
-          material->setObjectName("Untitled");
-          material->setDiffuse(100.0f);
-          material->setColor(QVector3D(100.0f, 100.0f, 100.0f) / material->diffuse());
-          material->setDiffuse(100.0f);
-          mesh->setMaterial(material);
+          // engine::Material* material = new engine::Material;
+          // aiColor4D color; float value; aiString aiStr;
+          // material->setObjectName("Untitled");
+          // material->setDiffuse(100.0f);
+          // material->setColor(QVector3D(100.0f, 100.0f, 100.0f) / material->diffuse());
+          // material->setDiffuse(100.0f);
+          // mesh->setMaterial(material);
 
+          QSharedPointer<Material> mat;
+          if (CACHE_MATERIALS.contains("wow")) {
+            mat = CACHE_MATERIALS["wow"];
+          } else {
+            mat = QSharedPointer<Material>(new Material(QVector3D(1.0f, 1.0f, 1.0f), 0, 0.6, 0, this));
+            const auto tex = QSharedPointer<engine::Texture>(new Texture(Texture::Diffuse));
+            mat->setObjectName("Untitled");
+            QImage img("/home/dsc/texturefun/blenderkit/blenderkit_1k/RedBrick21670_1K_Color.png");
+            tex->setImage(img);
+            mat->setDiffuseTexture(tex);
+            CACHE_MATERIALS["wow"] = mat;
+          }
+
+          mesh->setMaterial(mat);
           this->meshAdded(mesh);
         }
-
-
-        int we = 1;
       }
     }
 

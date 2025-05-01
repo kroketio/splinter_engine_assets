@@ -239,13 +239,13 @@ namespace engine {
     // mat->setDiffuseTexture(tex);
     // mesh->setMaterial(mat);
 
-    int index = m_normalMeshes.size();
-    int maxColumns = 10, cellSize = 1;
-    int x = (index % maxColumns) * cellSize;
-    int y = (index / maxColumns) * cellSize;
+    // int index = m_normalMeshes.size();
+    // int maxColumns = 10, cellSize = 1;
+    // int x = (index % maxColumns) * cellSize;
+    // int y = (index / maxColumns) * cellSize;
 
     auto m = new OpenGLMesh(mesh, this);
-    mesh->setPosition(QVector3D(x, y, 0));
+    mesh->setPosition(QVector3D(0, 0, 0));
     m_normalMeshes.push_back(m);
   }
 

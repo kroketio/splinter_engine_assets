@@ -5,10 +5,13 @@
 #include "texture.h"
 
 namespace engine {
-  class Material: public QObject {
-    Q_OBJECT
+  class Material;
+  extern QMap<QString, QSharedPointer<Material>> CACHE_MATERIALS;
 
-    public:
+  class Material: public QObject {
+  Q_OBJECT
+
+  public:
     Material(QObject * parent = 0);
     Material(QVector3D color, float ambient, float diffuse, float specular, QObject * parent = 0);
     Material(const Material& material);
@@ -26,8 +29,8 @@ namespace engine {
     QSharedPointer<engine::Texture> specularTexture();
     QSharedPointer<engine::Texture> bumpTexture();
 
-    public slots:
-        void setColor(QVector3D color);
+  public slots:
+    void setColor(QVector3D color);
     void setAmbient(float ambient);
     void setDiffuse(float diffuse);
     void setSpecular(float specular);
@@ -36,8 +39,8 @@ namespace engine {
     void setSpecularTexture(QSharedPointer<engine::Texture> specularTexture);
     void setBumpTexture(QSharedPointer<engine::Texture> bumpTexture);
 
-    signals:
-        void colorChanged(QVector3D color);
+  signals:
+    void colorChanged(QVector3D color);
     void ambientChanged(float ambient);
     void diffuseChanged(float diffuse);
     void specularChanged(float specular);

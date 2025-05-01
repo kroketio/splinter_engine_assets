@@ -23,7 +23,7 @@ namespace engine {
     m_meshType = mesh.m_meshType;
     m_vertices = mesh.m_vertices;
     m_indices = mesh.m_indices;
-    m_material = new Material(*mesh.m_material);
+    m_material = QSharedPointer<Material>(new Material(*mesh.m_material));
     setObjectName(mesh.objectName());
   }
 
@@ -169,7 +169,7 @@ namespace engine {
     return m_indices;
   }
 
-  Material * Mesh::material() const{
+  QSharedPointer<Material> Mesh::material() const{
     return m_material;
   }
 
@@ -180,7 +180,7 @@ namespace engine {
       if (mesh1 == 0) mesh1 = mesh2;
       Mesh* mergedMesh = new Mesh(mesh1->meshType());
       mergedMesh->setObjectName(mesh1->objectName());
-      mergedMesh->setMaterial(new Material(*mesh1->material()));
+      mergedMesh->setMaterial(QSharedPointer<Material>(new Material(*mesh1->material())));
       for (int i = 0; i < mesh1->m_vertices.size(); i++)
         mergedMesh->m_vertices.push_back(mesh1->globalModelMatrix() * mesh1->m_vertices[i]);
       mergedMesh->m_indices = mesh1->m_indices;
@@ -198,7 +198,7 @@ namespace engine {
 
     Mesh* mergedMesh = new Mesh(mesh1->meshType());
     mergedMesh->setObjectName(mesh1->objectName() + mesh2->objectName());
-    mergedMesh->setMaterial(new Material);
+    mergedMesh->setMaterial(QSharedPointer<Material>(new Material));
 
     for (int i = 0; i < mesh1->m_vertices.size(); i++)
       mergedMesh->m_vertices.push_back(mesh1->globalModelMatrix() * mesh1->m_vertices[i]);
@@ -231,19 +231,13 @@ namespace engine {
     }
   }
 
-  bool Mesh::setMaterial(Material * material) {
+  bool Mesh::setMaterial(const QSharedPointer<Material>& material) {
     if (m_material == material) return false;
-
-    if (m_material) {
-      Material* tmp = m_material;
-      m_material = 0;
-      delete tmp;
-    }
 
     if (material) {
       m_material = material;
+      qDebug() << material->objectName();
       m_material->setParent(this);
-
       qDebug() << "Material" << material->objectName() << "is assigned to mesh" << objectName();
     }
 
@@ -273,18 +267,6 @@ namespace engine {
 
     qDebug() << "Bitangents of" << this->objectName() << "is reversed";
     geometryChanged(m_vertices, m_indices);
-  }
-
-  void Mesh::childEvent(QChildEvent * e) {
-    if (e->added()) {
-      if (Material* material = qobject_cast<Material*>(e->child()))
-        setMaterial(material);
-    } else if (e->removed()) {
-      if (e->child() == m_material) {
-        m_material = 0;
-        materialChanged(0);
-      }
-    }
   }
 
   engine::Mesh* Mesh::loadMesh(const aiMesh* aiMeshPtr) {
@@ -323,8 +305,6 @@ namespace engine {
 
     for (int i = 0; i < mesh->m_vertices.size(); i++)
       mesh->m_vertices[i].position -= center;
-
-
 
     mesh->m_position = center;
     return mesh;

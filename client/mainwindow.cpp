@@ -93,7 +93,7 @@ void MainWindow::test() {
   m_glWindow->setScene(new engine::OpenGLScene(m_scene));
 
   const auto start = std::chrono::high_resolution_clock::now();
-  auto* mesh = new engine::JustAQuad(this);
+  // auto* mesh = new engine::JustAQuad(this);
   // auto* mesh2 = engine::Mesh::loadMesh(aiMesh);
   int wegiwoeogwe = 1;
 
@@ -111,14 +111,15 @@ void MainWindow::test() {
   // }
   // mesh->setMaterial(material);
 
-  m_scene->meshAdded(mesh);
+  // m_scene->meshAdded(mesh);
 
   const auto end = std::chrono::high_resolution_clock::now();
   const std::chrono::duration<double, std::milli> duration = end - start;
   std::cout << "function took " << duration.count() << " ms\n";
 
   // auto x = QString("/media/dsc/0376C0A40D1AE4C9/splinter_test_removeme/splinter.vmf");
-  m_scene->loadVMF("/media/dsc/0376C0A40D1AE4C9/splinter_test_removeme/splinter.vmf");
+  // m_scene->loadVMF("/media/dsc/0376C0A40D1AE4C9/splinter_test_removeme/splinter.vmf");
+  m_scene->loadVMF("/home/dsc/CLionProjects/godot/texture_browser/cube_test.vmf");
 
   // QVector3D v0(704, -256, 0);
   // QVector3D v1(768, -256, 0);

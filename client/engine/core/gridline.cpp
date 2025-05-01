@@ -4,7 +4,7 @@ namespace engine {
   Gridline::Gridline(QObject* parent): QObject(0) {
     m_marker = new Mesh(Mesh::Line, this);
     m_marker->setObjectName("Gridline Marker");
-    m_marker->setMaterial(new Material);
+    m_marker->setMaterial(QSharedPointer<Material>(new Material));
 
     setObjectName("Untitled Gridline");
     reset();
@@ -16,7 +16,7 @@ namespace engine {
 
   Gridline::Gridline(const Gridline & gridline): QObject(0) {
     m_marker = new Mesh(Mesh::Line, 0);
-    m_marker->setMaterial(new Material);
+    m_marker->setMaterial(QSharedPointer<Material>(new Material));
     m_xRange = gridline.m_xRange;
     m_yRange = gridline.m_yRange;
     m_zRange = gridline.m_zRange;

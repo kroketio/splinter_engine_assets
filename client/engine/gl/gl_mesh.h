@@ -41,8 +41,8 @@ public:
     static OpenGLUniformBufferObject *m_modelInfo;
 
     private slots:
-        void materialChanged(Material* material);
-    void geometryChanged(const QVector<Vertex>& vertices, const QVector<uint32_t>& indices);
-    void hostDestroyed(QObject* host);
+      void materialChanged(const QSharedPointer<Material> &material);
+      void geometryChanged(const QVector<Vertex>& vertices, const QVector<uint32_t>& indices);
+      void hostDestroyed(QObject* host);
   };
 }

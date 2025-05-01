@@ -1,6 +1,8 @@
 #include "engine/core/material.h"
 
 namespace engine {
+  QMap<QString, QSharedPointer<Material>> CACHE_MATERIALS = {};
+
   Material::Material(QObject* parent): QObject(0) {
     m_color = QVector3D(1.0f, 1.0f, 1.0f);
     m_ambient = 0.2f;

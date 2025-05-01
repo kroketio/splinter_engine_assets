@@ -28,7 +28,9 @@ namespace engine {
     else
       m_openGLMaterial = 0;
 
-    connect(m_host, SIGNAL(materialChanged(Material*)), this, SLOT(materialChanged(Material*)));
+    // connect(m_host, SIGNAL(materialChanged(Material*)), this, SLOT(materialChanged(Material*)));
+    connect(m_host, &Mesh::materialChanged, this, &OpenGLMesh::materialChanged);
+
     connect(m_host, SIGNAL(geometryChanged(QVector<Vertex>, QVector<uint32_t>)), this, SLOT(geometryChanged(QVector<Vertex>, QVector<uint32_t>)));
     connect(m_host, SIGNAL(destroyed(QObject*)), this, SLOT(hostDestroyed(QObject*)));
 
@@ -66,6 +68,8 @@ namespace engine {
     glFuncs->glEnableVertexAttribArray(2);
     glFuncs->glEnableVertexAttribArray(3);
     glFuncs->glEnableVertexAttribArray(4);
+    auto pos = offsetof(Vertex, position);
+    auto ee = offsetof(Vertex, normal);
     glFuncs->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, position));
     glFuncs->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, normal));
     glFuncs->glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, tangent));
@@ -149,8 +153,8 @@ namespace engine {
     }
   }
 
-  void OpenGLMesh::materialChanged(Material * material) {
-    if (material == 0)
+  void OpenGLMesh::materialChanged(const QSharedPointer<Material> &material) {
+    if (material == nullptr || material.isNull())
       m_openGLMaterial = 0;
     else
       m_openGLMaterial = new OpenGLMaterial(material);

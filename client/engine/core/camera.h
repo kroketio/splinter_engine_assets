@@ -5,13 +5,13 @@
 #include "common.h"
 
 namespace engine {
-  class Camera: public QObject {
+  class Camera : public QObject {
     Q_OBJECT
 
-public:
-    Camera(QObject* parent = 0);
-    Camera(QVector3D position, QVector3D direction, QObject* parent = 0);
-    Camera(const Camera& camera);
+  public:
+    Camera(QObject *parent = 0);
+    Camera(QVector3D position, QVector3D direction, QObject *parent = 0);
+    Camera(const Camera &camera);
     ~Camera();
 
     void moveForward(float shift);
@@ -35,8 +35,8 @@ public:
     QMatrix4x4 projectionMatrix() const;
     QMatrix4x4 viewMatrix() const;
 
-    public slots:
-        void reset();
+  public slots:
+    void reset();
     void setMovingSpeed(float movingSpeed);
     void setFieldOfView(float fieldOfView);
     void setAspectRatio(float aspectRatio);
@@ -45,8 +45,8 @@ public:
     void setPosition(QVector3D position);
     void setDirection(QVector3D direction);
 
-    signals:
-        void movingSpeedChanged(float movingSpeed);
+  signals:
+    void movingSpeedChanged(float movingSpeed);
     void fieldOfViewChanged(float fieldOfView);
     void aspectRatioChanged(float aspectRatio);
     void nearPlaneChanged(float nearPlane);
@@ -60,4 +60,4 @@ public:
 
     void setUpVector();
   };
-}
+} // namespace engine
