@@ -104,8 +104,9 @@ namespace engine {
   QMatrix4x4 AbstractEntity::globalModelMatrix() const {
     if (AbstractEntity* par = qobject_cast<AbstractEntity*>(parent()))
       return par->globalModelMatrix() * localModelMatrix();
-    else
+    else {
       return localModelMatrix();
+    }
   }
 
   AbstractEntity * AbstractEntity::getHighlighted() {

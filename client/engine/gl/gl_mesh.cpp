@@ -23,8 +23,16 @@ namespace engine {
     m_vao = 0;
     m_vbo = 0;
     m_ebo = 0;
-    if (m_host->material())
-      m_openGLMaterial = new OpenGLMaterial(m_host->material());
+    if (m_host->material()) {
+      auto mat = m_host->material();
+      auto mat_name = mat->objectName();
+      if (GLMaterialCache.contains(mat_name))
+        m_openGLMaterial = GLMaterialCache[mat_name];
+      else {
+        m_openGLMaterial = new OpenGLMaterial(mat);
+        GLMaterialCache[mat_name] = m_openGLMaterial;
+      }
+    }
     else
       m_openGLMaterial = 0;
 
@@ -68,8 +76,6 @@ namespace engine {
     glFuncs->glEnableVertexAttribArray(2);
     glFuncs->glEnableVertexAttribArray(3);
     glFuncs->glEnableVertexAttribArray(4);
-    auto pos = offsetof(Vertex, position);
-    auto ee = offsetof(Vertex, normal);
     glFuncs->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, position));
     glFuncs->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, normal));
     glFuncs->glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, tangent));
@@ -81,13 +87,15 @@ namespace engine {
 
   void OpenGLMesh::commit() {
     QMatrix4x4 modelMat = m_host->globalModelMatrix();
-
     memcpy(shaderModelInfo.modelMat, modelMat.constData(), 64);
     memcpy(shaderModelInfo.normalMat, QMatrix4x4(modelMat.normalMatrix()).constData(), 64);
     shaderModelInfo.sizeFixed = this->m_sizeFixed;
     shaderModelInfo.selected = m_host->selected();
     shaderModelInfo.highlighted = m_host->highlighted();
     shaderModelInfo.pickingID = this->m_pickingID;
+
+    if (m_host->highlighted())
+      int weogw = 1;
 
     if (m_modelInfo == 0) {
       m_modelInfo = new OpenGLUniformBufferObject;
@@ -102,32 +110,90 @@ namespace engine {
   }
 
   void OpenGLMesh::render(bool pickingPass) {
-    if (!m_host->visible()) return;
-    if (m_vao == 0 || m_vbo == 0 || m_ebo == 0) create();
+    if (!m_host->is_visible)
+      return;
 
-    commit();
+    if (m_vao == 0 || m_vbo == 0 || m_ebo == 0) {
+      create(); // Initialize buffers if needed
+    }
 
-    if (!pickingPass && m_host->wireFrameMode())
-      glFuncs->glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    else if (m_openGLMaterial)
+    if (pickingPass) {
+      commit();
       m_openGLMaterial->bind();
+    }
+
+    if (!pickingPass && !m_host->is_committed) {
+      commit();
+      m_host->is_committed = true;
+      return; // Skip this frame
+    }
 
     m_vao->bind();
 
-    if (m_host->meshType() == Mesh::Triangle)
-      glFuncs->glDrawElements(GL_TRIANGLES, (GLsizei) m_host->indices().size(), GL_UNSIGNED_INT, 0);
-    else if (m_host->meshType() == Mesh::Line)
-      glFuncs->glDrawElements(GL_LINES, (GLsizei) m_host->indices().size(), GL_UNSIGNED_INT, 0);
-    else
-      glFuncs->glDrawElements(GL_POINTS, (GLsizei) m_host->indices().size(), GL_UNSIGNED_INT, 0);
+    GLenum mode = GL_TRIANGLES;
+    switch (m_host->meshType()) {
+      case Mesh::Line:  mode = GL_LINES; break;
+      case Mesh::Point: mode = GL_POINTS; break;
+      default:          break;
+    }
+
+    glFuncs->glDrawElements(mode, static_cast<GLsizei>(m_host->indices().size()), GL_UNSIGNED_INT, nullptr);
 
     m_vao->release();
 
-    if (!pickingPass && m_host->wireFrameMode())
-      glFuncs->glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    else if (m_openGLMaterial)
+    if (pickingPass) {
       m_openGLMaterial->release();
+    }
   }
+
+  // void OpenGLMesh::render(bool pickingPass) {
+  //   if (!m_host->is_visible) return;
+  //
+  //   if (m_vao == 0 || m_vbo == 0 || m_ebo == 0)
+  //     create();
+  //
+  //   // Avoid calling commit() during rendering
+  //   if (!m_host->is_committed) {
+  //     commit();
+  //     m_host->is_committed = true;
+  //     return;  // Skip this frame
+  //   }
+  //
+  //   static bool lastWireframe = false;
+  //   bool wireframe = !pickingPass && m_host->wireFrameMode();
+  //
+  //   // Only update polygon mode if it has changed
+  //   if (wireframe != lastWireframe) {
+  //     glFuncs->glPolygonMode(GL_FRONT_AND_BACK, wireframe ? GL_LINE : GL_FILL);
+  //     lastWireframe = wireframe;
+  //   }
+  //
+  //   // Only bind material if it's valid and needed
+  //   static OpenGLMaterial* lastBoundMaterial = nullptr;
+  //   if (!wireframe && m_openGLMaterial && m_openGLMaterial != lastBoundMaterial) {
+  //     m_openGLMaterial->bind();
+  //     lastBoundMaterial = m_openGLMaterial;
+  //   }
+  //
+  //   m_vao->bind();
+  //
+  //   GLenum mode = GL_TRIANGLES;
+  //   switch (m_host->meshType()) {
+  //     case Mesh::Line:    mode = GL_LINES; break;
+  //     case Mesh::Point:   mode = GL_POINTS; break;
+  //     default:            break; // default to GL_TRIANGLES
+  //   }
+  //
+  //   glFuncs->glDrawElements(mode, static_cast<GLsizei>(m_host->indices().size()), GL_UNSIGNED_INT, nullptr);
+  //
+  //   m_vao->release();
+  //
+  //   // Release material only if not wireframe and something was bound
+  //   if (!wireframe && lastBoundMaterial) {
+  //     lastBoundMaterial->release();
+  //     lastBoundMaterial = nullptr;
+  //   }
+  // }
 
   void OpenGLMesh::destroy() {
     if (m_vao) delete m_vao;

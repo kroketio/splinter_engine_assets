@@ -56,6 +56,8 @@ public slots:
 
 protected:
   void closeEvent(QCloseEvent *event) override;
+  void keyPressEvent(QKeyEvent* event) override;
+  void keyReleaseEvent(QKeyEvent* event) override;
 
 private:
   Ui::MainWindow *ui;
@@ -66,6 +68,8 @@ private:
   void createQml();
   void destroyQml();
 private:
+  float bla = 0.0;
+  engine::Mesh *m_mesh = nullptr;
   engine::OpenGLWindow* m_glWindow;
   engine::Scene* m_scene;
 };

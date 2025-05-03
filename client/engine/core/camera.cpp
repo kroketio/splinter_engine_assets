@@ -13,10 +13,10 @@ namespace engine {
 
   Camera::Camera(QVector3D position, QVector3D direction, QObject* parent): QObject(0) {
     setObjectName("Camera");
-    setMovingSpeed(0.2f * 70);
+    setMovingSpeed(0.2f * 35);
     setFieldOfView(40.0f);
     setNearPlane(0.1f);
-    setFarPlane(100000.0f);
+    setFarPlane(m_far_plane);
     setPosition(position);
     setDirection(direction);
     setParent(parent);
@@ -52,7 +52,7 @@ namespace engine {
 
   void Camera::turnLeft(float angle) {
     QMatrix4x4 mat;
-    mat.rotate(angle, QVector3D(0, 0, 1));
+    mat.rotate(angle, m_hmm);
     setDirection(mat * m_direction);
   }
 
@@ -77,8 +77,6 @@ namespace engine {
   void Camera::dumpObjectTree(int l) {
     dumpObjectInfo(l);
   }
-
-  // Get properties
 
   float Camera::movingSpeed() const {
     return m_movingSpeed;
@@ -125,11 +123,11 @@ namespace engine {
   // Public slots
 
   void Camera::reset() {
-    setMovingSpeed(0.2f * 70);
+    setMovingSpeed(0.2f * 35);
     setFieldOfView(45.0f);
     setAspectRatio(1.0f);
     setNearPlane(0.1f);
-    setFarPlane(100000.0f);
+    setFarPlane(m_far_plane);
     setPosition(QVector3D(40, 40, 40));
     setDirection(QVector3D(-1, -1, -1));
 
@@ -190,7 +188,13 @@ namespace engine {
   // Private functions
 
   void Camera::setUpVector() {
-    QVector3D t = QVector3D::crossProduct(m_direction, QVector3D(0, 0, 1));
+    QVector3D t = QVector3D::crossProduct(m_direction, m_hmm);
     m_up = QVector3D::crossProduct(t, m_direction);
   }
+
+  // void Camera::setUpVector() {
+  //   const QVector3D worldUp(0, 0, 1);  // Y-up system
+  //   QVector3D right = QVector3D::crossProduct(m_direction.normalized(), worldUp).normalized();
+  //   m_up = QVector3D::crossProduct(right, m_direction).normalized();
+  // }
 }

@@ -12,6 +12,7 @@
 #include "mainwindow.h"
 #include "lib/logger.h"
 #include "ctx.h"
+#include "lib/qt/theme_css_watcher.h"
 
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
@@ -26,6 +27,15 @@ int main(int argc, char *argv[]) {
   QApplication::setOrganizationName("Kroket Ltd.");
   QApplication app(argc, argv);
   //qInstallMessageHandler(customMessageHandler);
+
+  QString path_css = "/home/dsc/CLionProjects/godot/texture_browser/src/lib/qt/theme/DarkBlue.qss";
+  auto *css_theme = new CSSTheme(&app, path_css);
+
+#ifdef DEBUG
+  css_theme->enable_watcher();
+#endif
+
+  app.setStyleSheet(css_theme->readCSS());
 
   qDebug() << "SSL version: " << QSslSocket::sslLibraryVersionString();
   qDebug() << "SSL build: " << QSslSocket::sslLibraryBuildVersionString();

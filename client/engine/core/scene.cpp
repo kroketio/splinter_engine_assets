@@ -1,5 +1,7 @@
 #include "engine/core/scene.h"
 
+#include "engine/core/just_a_quad.h"
+
 namespace engine {
   Scene::Scene(): QObject(0), m_camera(0) {  //  m_gizmo(0)
     setObjectName("Untitled Scene");
@@ -50,6 +52,7 @@ namespace engine {
     }
 
     vmfpp::Node* node_ptr = reinterpret_cast<vmfpp::Node*>(&*vmf);
+    QList<Mesh*> meshes;
     for (const auto &node: node_ptr->getChildren()) {
       if (node.first != "world") continue;
       if (node.second.size() <= 0) continue;
@@ -65,6 +68,24 @@ namespace engine {
 
           auto vaxis = side.getValue("uaxis")[0];
           auto uaxis = side.getValue("vaxis")[0];
+
+          float a, b, c, d, e;
+
+          // Extract the four float values
+          if (sscanf(vaxis.c_str(), "[%f %f %f %f] %f", &a, &b, &c, &d, &e) != 5) {
+            qWarning() << "vaxis parse error" << vaxis;
+            continue;
+          }
+
+          bla_side.vaxis = {a,b,c,d,e};
+
+          if (sscanf(uaxis.c_str(), "[%f %f %f %f] %f", &a, &b, &c, &d, &e) != 5) {
+            qWarning() << "vaxis parse error" << vaxis;
+            continue;
+          }
+
+          bla_side.uaxis = {a,b,c,d,e};
+
           bla_side.rotation = stoi(side.getValue("rotation")[0]);
           bla_side.id = stoi(side.getValue("id")[0]);
           bla_side.material = side.getValue("material")[0];
@@ -74,12 +95,19 @@ namespace engine {
           for (const auto& side_child: side_childs) {
             if (side_child.first == "vertices_plus") {
               auto vert = side_child.second[0].getValue("v");
+              if (vert.size() <= 3) {
+                // vertices_plus with only 3 or fewer entries, wut
+                continue;
+              }
 
               bla_side.vertices_plus = [vert] {
                 std::array<QVector3D, 4> arr;
                 for (size_t i = 0; i < 4; ++i) {
                   float x = 0.0f, y = 0.0f, z = 0.0f;
                   const char* cstr = vert[i].c_str();
+                  if (cstr == NULL) {
+                    int weiogw = 1;
+                  }
                   char* end;
                   x = std::strtof(cstr, &end);
                   cstr = end;
@@ -87,7 +115,7 @@ namespace engine {
                   cstr = end;
                   z = std::strtof(cstr, &end);
                   arr[i] = QVector3D(x, y, z);
-                  qDebug() << arr[i];
+                  // qDebug() << arr[i];
                 }
                 return arr;
               }();
@@ -100,8 +128,10 @@ namespace engine {
 
           bla_solid.sides.emplace_back(bla_side);
 
-
           auto mesh = engine::JustAQuad::from(bla_side);
+          mesh->setParent(this);
+          // QQuaternion rotation = QQuaternion::fromAxisAndAngle(QVector3D(0, 1, 0), 45.0f);
+          // mesh->setRotation(rotation);
 
           // engine::Material* material = new engine::Material;
           // aiColor4D color; float value; aiString aiStr;
@@ -116,19 +146,40 @@ namespace engine {
             mat = CACHE_MATERIALS["wow"];
           } else {
             mat = QSharedPointer<Material>(new Material(QVector3D(1.0f, 1.0f, 1.0f), 0, 0.6, 0, this));
-            const auto tex = QSharedPointer<engine::Texture>(new Texture(Texture::Diffuse));
-            mat->setObjectName("Untitled");
-            QImage img("/home/dsc/texturefun/blenderkit/blenderkit_1k/RedBrick21670_1K_Color.png");
-            tex->setImage(img);
-            mat->setDiffuseTexture(tex);
+            mat->setObjectName("cool_material");
+
+            QImage diffuse = QImage("/home/dsc/CLionProjects/godot/texture_browser/client/engine/resources/measurewall01.png").mirrored(false, true);
+            // QImage diffuse = QImage("/home/dsc/Documents/godot_test/MossyStoneWall170_1K_Color.jpg").mirrored(false, true);
+            // QImage normal = QImage("/home/dsc/Documents/godot_test/MossyStoneWall170_1K_NormalGL.jpg").mirrored(false, true);
+            // QImage specular = QImage("/home/dsc/Documents/godot_test/MossyStoneWall170_1K_Displacement.jpg").mirrored(false, true);
+
+            const auto tex_diffuse = QSharedPointer<engine::Texture>(new Texture(Texture::Diffuse));
+            tex_diffuse->setImage(diffuse);
+            mat->setDiffuseTexture(tex_diffuse);
+            
+            // const auto tex_specular = QSharedPointer<engine::Texture>(new Texture(Texture::Specular));
+            // tex_specular->setImage(specular);
+            // mat->setSpecularTexture(tex_specular);
+            //
+            // const auto tex_normal = QSharedPointer<engine::Texture>(new Texture(Texture::Bump));
+            // tex_normal->setImage(normal);
+            // mat->setBumpTexture(tex_normal);
+
             CACHE_MATERIALS["wow"] = mat;
           }
 
           mesh->setMaterial(mat);
+          // meshes << mesh;
           this->meshAdded(mesh);
         }
       }
     }
+
+    // Mesh* mesh = new Mesh();
+    // mesh->setParent(this);
+    // for (const auto&_m: meshes) {
+    //   mesh = Mesh::merge(mesh, _m);
+    // }
 
     return true;
   }

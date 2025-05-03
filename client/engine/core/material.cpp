@@ -8,7 +8,7 @@ namespace engine {
     m_ambient = 0.2f;
     m_diffuse = 1.0f;
     m_specular = 0.5f;
-    m_shininess = 32.0f;
+    m_shininess = m_shininess_default;
     setObjectName("Untitled Material");
     setParent(parent);
   }
@@ -20,7 +20,7 @@ namespace engine {
     m_ambient = ambient;
     m_diffuse = diffuse;
     m_specular = specular;
-    m_shininess = 32.0f;
+    m_shininess = m_shininess_default;
     setObjectName("Untitled Material");
     setParent(parent);
   }

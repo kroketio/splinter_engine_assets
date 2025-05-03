@@ -7,6 +7,8 @@
 #include "gl_uniform_buffer_object.h"
 
 namespace engine {
+  class OpenGLMaterial;
+  extern QMap<QString, OpenGLMaterial*> GLMaterialCache;
   class OpenGLMaterial : public QObject {
     Q_OBJECT
 
@@ -17,6 +19,8 @@ namespace engine {
 
     void bind();
     void release();
+
+    bool is_bound = false;
 
   private:
     QSharedPointer<Material> m_host;

@@ -25,6 +25,8 @@ public:
     void setSizeFixed(bool sizeFixed);
     void setPickingID(uint id);
 
+    OpenGLMaterial *m_openGLMaterial;
+
   protected:
     void childEvent(QChildEvent *event) override;
 
@@ -36,7 +38,6 @@ public:
     QOpenGLVertexArrayObject * m_vao;
     QOpenGLBuffer * m_vbo, *m_ebo;
     QOpenGLFunctions_3_3_Core * glFuncs;
-    OpenGLMaterial *m_openGLMaterial;
 
     static OpenGLUniformBufferObject *m_modelInfo;
 

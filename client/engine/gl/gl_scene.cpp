@@ -67,6 +67,8 @@ namespace engine {
       this->lightAdded(m_host->pointLights()[i]);
     for (int i = 0; i < m_host->spotLights().size(); i++)
       this->lightAdded(m_host->spotLights()[i]);
+    for (int i = 0; i < m_host->ambientLights().size(); i++)
+      this->lightAdded(m_host->ambientLights()[i]);
     // for (int i = 0; i < m_host->models().size(); i++)
     //     this->modelAdded(m_host->models()[i]);
 
@@ -110,18 +112,150 @@ namespace engine {
     }
   }
 
+  // for (auto* mesh : m_sceneMeshes) {
+  //   QMatrix4x4 modelMatrix = mesh->globalModelMatrix();
+  //
+  //   if (!isMeshInFrustum(mesh, m_frustumPlanes, modelMatrix))
+  //     continue; // Skip this mesh — it's outside the frustum
+  //
+  //   mesh->render(); // Or your actual drawing function
+  // }
+
+  bool OpenGLScene::isMeshInFrustum(const Mesh* mesh, const QVector<QVector4D>& planes, const QMatrix4x4& modelMatrix) {
+    auto [center, radius] = mesh->cached_bounding_shere;
+
+    const QVector3D worldCenter = modelMatrix * center;
+    for (const auto& plane : planes) {
+      float distance = QVector3D::dotProduct(plane.toVector3D(), worldCenter) + plane.w();
+      if (distance < -radius)
+        return false;
+    }
+
+    for (const auto& plane : planes) {
+      float distance = QVector3D::dotProduct(plane.toVector3D(), worldCenter) + plane.w();
+
+      qDebug() << "not culled:"
+               << " Center:" << worldCenter
+               << " Radius:" << radius
+               << " Distance:" << distance;
+    }
+
+    return true;
+  }
+
   void OpenGLScene::renderModels(bool pickingPass) {
-    for (int i = 0; i < m_normalMeshes.size(); i++) {
-      m_normalMeshes[i]->setPickingID(1000 + i);
-      m_normalMeshes[i]->render(pickingPass);
+    // auto start = std::chrono::high_resolution_clock::now();
+    std::unordered_map<OpenGLMaterial*, std::vector<OpenGLMesh*>> meshBatches;
+
+    for (auto* mesh : m_normalMeshes) {
+      if (!mesh->host()->is_visible)
+        continue;
+
+      OpenGLMaterial* mat = mesh->m_openGLMaterial;
+      meshBatches[mat].push_back(mesh);
+    }
+
+    OpenGLMaterial* lastBoundMaterial = nullptr;
+    int i = 0;
+    for (const auto& [material, meshList] : meshBatches) {
+      // bind material once for the batch
+      if (!pickingPass && material && material != lastBoundMaterial) {
+        material->bind();
+        lastBoundMaterial = material;
+      }
+
+      // render each mesh in this batch
+      for (auto* mesh : meshList) {
+        mesh->setPickingID(1000 + i);
+        mesh->render(pickingPass);
+        i += 1;
+      }
+
+      // Release material if used
+      if (!pickingPass && material) {
+        material->release();
+      }
+    }
+
+    // auto end = std::chrono::high_resolution_clock::now();
+    // std::chrono::duration<double, std::milli> elapsed = end - start;
+    // std::cout << "Function took " << elapsed.count() << " ms" << std::endl;
+  }
+
+  void OpenGLScene::updateFrustumPlanes(const QMatrix4x4& vp) {
+    m_frustumPlanes.resize(6);
+
+    // Right
+    m_frustumPlanes[0] = QVector4D(
+        vp(0,3) - vp(0,0),
+        vp(1,3) - vp(1,0),
+        vp(2,3) - vp(2,0),
+        vp(3,3) - vp(3,0)
+    );
+
+    // Left
+    m_frustumPlanes[1] = QVector4D(
+        vp(0,3) + vp(0,0),
+        vp(1,3) + vp(1,0),
+        vp(2,3) + vp(2,0),
+        vp(3,3) + vp(3,0)
+    );
+
+    // Bottom
+    m_frustumPlanes[2] = QVector4D(
+        vp(0,3) + vp(0,1),
+        vp(1,3) + vp(1,1),
+        vp(2,3) + vp(2,1),
+        vp(3,3) + vp(3,1)
+    );
+
+    // Top
+    m_frustumPlanes[3] = QVector4D(
+        vp(0,3) - vp(0,1),
+        vp(1,3) - vp(1,1),
+        vp(2,3) - vp(2,1),
+        vp(3,3) - vp(3,1)
+    );
+
+    // Far
+    m_frustumPlanes[4] = QVector4D(
+        vp(0,3) - vp(0,2),
+        vp(1,3) - vp(1,2),
+        vp(2,3) - vp(2,2),
+        vp(3,3) - vp(3,2)
+    );
+
+    // Near
+    m_frustumPlanes[5] = QVector4D(
+        vp(0,3) + vp(0,2),
+        vp(1,3) + vp(1,2),
+        vp(2,3) + vp(2,2),
+        vp(3,3) + vp(3,2)
+    );
+
+    // Normalize
+    for (auto &plane : m_frustumPlanes) {
+      // float len = QVector3D(plane.x(), plane.y(), plane.z()).length();
+      // plane /= len;
+      QVector3D normal = QVector3D(plane.x(), plane.y(), plane.z());
+      float length = normal.length();
+      if (length != 0.0f) plane /= length;
     }
   }
 
   void OpenGLScene::commitCameraInfo() {
-    if (!m_host->camera()) return;
-    memcpy(shaderCameraInfo.projMat, m_host->camera()->projectionMatrix().constData(), 64);
-    memcpy(shaderCameraInfo.viewMat, m_host->camera()->viewMatrix().constData(), 64);
-    shaderCameraInfo.cameraPos = m_host->camera()->position().toVector4D();
+    auto cam = m_host->camera();
+    if (!cam) return;
+    auto proj_matrix = cam->projectionMatrix();
+    auto view_matrix = cam->viewMatrix();
+
+    // QMatrix4x4 vp = proj_matrix * view_matrix;
+    // QVector<QVector4D> frustumPlanes;
+    // //updateFrustumPlanes(vp);
+
+    memcpy(shaderCameraInfo.projMat, proj_matrix.constData(), 64);
+    memcpy(shaderCameraInfo.viewMat, view_matrix.constData(), 64);
+    shaderCameraInfo.cameraPos = cam->position().toVector4D();
 
     if (m_cameraInfo == 0) {
       m_cameraInfo = new OpenGLUniformBufferObject;
@@ -219,6 +353,7 @@ namespace engine {
 
   void OpenGLScene::lightAdded(AbstractLight * light) {
     // TODO: readd
+    int e = 1;
     // if (light->marker())
     //     m_lightMeshes.push_back(new OpenGLMesh(light->marker(), this));
   }

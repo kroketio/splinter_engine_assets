@@ -66,6 +66,9 @@ namespace engine {
   void OpenGLWindow::initializeGL() {
     initializeOpenGLFunctions();
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_FRONT); // hmm.jpg
+    glFrontFace(GL_CCW);
 
     if (m_renderer) {
       m_renderer->reloadShaders();
@@ -96,14 +99,15 @@ namespace engine {
       m_openGLScene->commitCameraInfo();
       m_openGLScene->commitLightInfo();
 
-      if (!m_keyPressed[Qt::LeftButton] && m_enableMousePicking) {
-        uint32_t pickingID = m_renderer->pickingPass(m_openGLScene, mapFromGlobal(QCursor::pos()) * devicePixelRatioF());
-        OpenGLMesh* pickedOpenGLMesh = m_openGLScene->pick(pickingID);
-        if (pickedOpenGLMesh)
-          pickedOpenGLMesh->host()->setHighlighted(true);
-        else if (Mesh::getHighlighted())
-          Mesh::getHighlighted()->setHighlighted(false);
-      }
+      // if (!m_keyPressed[Qt::LeftButton] && m_enableMousePicking) {
+      //   uint32_t pickingID = m_renderer->pickingPass(m_openGLScene, mapFromGlobal(QCursor::pos()) * devicePixelRatioF());
+      //   // qDebug() << pickingID;
+      //   OpenGLMesh* pickedOpenGLMesh = m_openGLScene->pick(pickingID);
+      //   if (pickedOpenGLMesh)
+      //     pickedOpenGLMesh->host()->setHighlighted(true);
+      //   else if (Mesh::getHighlighted())
+      //     Mesh::getHighlighted()->setHighlighted(false);
+      // }
 
       m_renderer->render(m_openGLScene);
     }

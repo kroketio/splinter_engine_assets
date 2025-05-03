@@ -173,6 +173,19 @@ namespace engine {
     return m_material;
   }
 
+  void Mesh::setBoundingSphere() {
+    QVector3D center(0, 0, 0);
+    for (const auto& v : m_vertices)
+      center += v.position;
+    center /= m_vertices.size();
+
+    float maxRadiusSq = 0.0f;
+    for (const auto& v : m_vertices)
+      maxRadiusSq = std::max(maxRadiusSq, (v.position - center).lengthSquared());
+
+    cached_bounding_shere = qMakePair(center, std::sqrt(maxRadiusSq));
+  }
+
   Mesh * Mesh::merge(const Mesh * mesh1, const Mesh * mesh2) {
     if (mesh1 == 0 && mesh2 == 0)
       return 0;

@@ -35,6 +35,9 @@ namespace engine {
     if (m_host->textureType() == engine::Texture::Diffuse) { // Diffuse map
       glFuncs->glActiveTexture(GL_TEXTURE0 + 0);
       glFuncs->glBindTexture(GL_TEXTURE_2D, m_openGLTexture->textureId());
+      glFuncs->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+      glFuncs->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+      glFuncs->glGenerateMipmap(GL_TEXTURE_2D);
     } else if (m_host->textureType() == engine::Texture::Specular) { // Specular map
       glFuncs->glActiveTexture(GL_TEXTURE0 + 1);
       glFuncs->glBindTexture(GL_TEXTURE_2D, m_openGLTexture->textureId());

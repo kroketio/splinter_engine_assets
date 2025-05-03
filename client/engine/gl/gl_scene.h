@@ -19,10 +19,14 @@ public:
     void renderAxis();
     void renderGridlines();
     void renderLights();
+    bool isMeshInFrustum(const Mesh *mesh, const QVector<QVector4D> &planes, const QMatrix4x4 &modelMatrix);
     void renderModels(bool pickingPass = false);
+    void updateFrustumPlanes(const QMatrix4x4 &vp);
 
     void commitCameraInfo();
     void commitLightInfo();
+
+    QVector<QVector4D> m_frustumPlanes;
 
   protected:
     void childEvent(QChildEvent *event) override;

@@ -36,7 +36,9 @@ MainWindow::MainWindow(AppContext *ctx, QWidget *parent) :
 
   // example QWidget button handler
   connect(ui->pushButton, &QPushButton::clicked, [=] {
-    qDebug() << "pushButton clicked";
+    bla += 10;
+    QQuaternion rotation = QQuaternion::fromAxisAndAngle(QVector3D(0, 0, 1), bla);
+    m_mesh->setRotation(rotation);
   });
 }
 
@@ -89,7 +91,9 @@ void MainWindow::test() {
 
   m_scene = new engine::Scene;
   m_scene->addGridline(new engine::Gridline);
-  m_scene->addDirectionalLight(new engine::DirectionalLight(QVector3D(1, 1, 1), QVector3D(-2, -4, -3)));
+  m_scene->addDirectionalLight(new engine::DirectionalLight(QVector3D(0.5, 0.5, 0.5), QVector3D(-2, -4, -3)));
+  // m_scene->addAmbientLight(new engine::AmbientLight(QVector3D(0.5, 0.5, 0.5)));
+  // m_scene->addSpotLight(new engine::SpotLight());
   m_glWindow->setScene(new engine::OpenGLScene(m_scene));
 
   const auto start = std::chrono::high_resolution_clock::now();
@@ -119,7 +123,14 @@ void MainWindow::test() {
 
   // auto x = QString("/media/dsc/0376C0A40D1AE4C9/splinter_test_removeme/splinter.vmf");
   // m_scene->loadVMF("/media/dsc/0376C0A40D1AE4C9/splinter_test_removeme/splinter.vmf");
-  m_scene->loadVMF("/home/dsc/CLionProjects/godot/texture_browser/cube_test.vmf");
+  connect(m_scene, &engine::Scene::meshAdded, [=](engine::Mesh* mesh) {
+    m_mesh = mesh;
+  });
+
+  // m_scene->loadVMF("/home/dsc/CLionProjects/godot/texture_browser/cube_test.vmf");
+  m_scene->loadVMF("/media/dsc/0376C0A40D1AE4C9/source_maps/damascus/assad.vmf");
+  // m_scene->loadVMF("/media/dsc/0376C0A40D1AE4C9/source_maps/angelkanchev.vmf");
+  // m_scene->loadVMF("/home/dsc/CLionProjects/godot/texture_browser/cube_test.vmf");
 
   // QVector3D v0(704, -256, 0);
   // QVector3D v1(768, -256, 0);
@@ -192,6 +203,22 @@ void MainWindow::onExample(int status) {
 
 void MainWindow::onWindowTitle(const QString &title) {
   this->setWindowTitle(title);
+}
+
+void MainWindow::keyPressEvent(QKeyEvent* event) {
+  if (event->isAutoRepeat())
+    return;
+
+  if (m_glWindow)
+    QCoreApplication::sendEvent(m_glWindow, event);
+}
+
+void MainWindow::keyReleaseEvent(QKeyEvent* event) {
+  if (event->isAutoRepeat())
+    return;
+
+  if (m_glWindow)
+    QCoreApplication::sendEvent(m_glWindow, event);
 }
 
 void MainWindow::destroyQml() {

@@ -52,6 +52,7 @@ namespace engine {
   protected:
     QVector3D m_color;
     float m_ambient, m_diffuse, m_specular, m_shininess;
+    float m_shininess_default = 264.0f;
     QSharedPointer<engine::Texture> m_diffuseTexture, m_specularTexture, m_bumpTexture;
   };
 }

@@ -12,6 +12,8 @@ file(GLOB SOURCE_FILES
         "engine/core/*.cpp"
         "lib/*.h"
         "lib/*.cpp"
+        "lib/qt/*.h"
+        "lib/qt/*.cpp"
         "lib/vmfpp/*.h"
         "lib/vmfpp/*.cpp"
         "lib/vmfpp/detail/*.h"
@@ -33,7 +35,7 @@ set(ASSIMP_BUILD_OBJ_IMPORTER ON CACHE BOOL "" FORCE)
 
 add_subdirectory(engine/assimp)
 
-qt_add_resources(RESOURCES engine/engine.qrc)
+qt_add_resources(RESOURCES engine/engine.qrc lib/qt/theme.qrc)
 add_executable(client ${SOURCE_FILES} ${RESOURCES})
 
 

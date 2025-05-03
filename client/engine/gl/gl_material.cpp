@@ -2,6 +2,7 @@
 #include "engine/gl/gl_texture.h"
 
 namespace engine {
+  QMap<QString, OpenGLMaterial*> GLMaterialCache = {};
   struct ShaderMaterialInfo {
     QVector4D color;      // 16          // 0
     float ambient;        // 4           // 16
@@ -16,6 +17,7 @@ namespace engine {
 
   static ShaderMaterialInfo shaderMaterialInfo;
 
+
   OpenGLUniformBufferObject *OpenGLMaterial::m_materialInfo = 0;
 
   OpenGLMaterial::OpenGLMaterial(const QSharedPointer<Material> &material, QObject* parent): QObject(0) {
@@ -25,30 +27,10 @@ namespace engine {
     this->specularTextureChanged(m_host->specularTexture());
     this->bumpTextureChanged(m_host->bumpTexture());
 
-    QWeakPointer weakMatPtr = m_host;
-    connect(this, &OpenGLMaterial::diffuseTextureChanged, this,
-            [weakMatPtr, this](const QSharedPointer<engine::Texture> &tex) {
-              if (auto host = weakMatPtr.toStrongRef())
-                this->diffuseTextureChanged(tex);
-            });
-
-    connect(this, &OpenGLMaterial::specularTextureChanged, this,
-            [weakMatPtr, this](const QSharedPointer<engine::Texture> &tex) {
-              if (auto host = weakMatPtr.toStrongRef())
-                this->specularTextureChanged(tex);
-            });
-
-    connect(this, &OpenGLMaterial::bumpTextureChanged, this,
-            [weakMatPtr, this](const QSharedPointer<engine::Texture> &tex) {
-              if (auto host = weakMatPtr.toStrongRef())
-                this->bumpTextureChanged(tex);
-            });
-
-    connect(this, &OpenGLMaterial::destroyed, this,
-            [weakMatPtr, this](QObject* obj) {
-              if (auto host = weakMatPtr.toStrongRef())
-                this->hostDestroyed(obj);
-            });
+    connect(m_host.data(), &Material::diffuseTextureChanged, this, &OpenGLMaterial::diffuseTextureChanged);
+    connect(m_host.data(), &Material::specularTextureChanged, this, &OpenGLMaterial::specularTextureChanged);
+    connect(m_host.data(), &Material::bumpTextureChanged, this, &OpenGLMaterial::bumpTextureChanged);
+    connect(m_host.data(), &Material::destroyed, this, &OpenGLMaterial::hostDestroyed);
 
     setParent(parent);
   }
@@ -85,6 +67,7 @@ namespace engine {
     m_materialInfo->bind();
     m_materialInfo->write(0, &shaderMaterialInfo, sizeof(ShaderMaterialInfo));
     m_materialInfo->release();
+    is_bound = true;
   }
 
   void OpenGLMaterial::release() {

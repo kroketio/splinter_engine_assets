@@ -27,9 +27,8 @@ namespace engine {
     void release();
 
     static void bindUniformBlock(QOpenGLShaderProgram * shader);
-
+    static QOpenGLFunctions_3_3_Core* glFuncs;
   private:
     GLuint m_id;
-    static QOpenGLFunctions_3_3_Core* glFuncs;
   };
 }

@@ -57,6 +57,9 @@ namespace engine {
   private:
     float m_movingSpeed, m_fieldOfView, m_aspectRatio, m_nearPlane, m_farPlane;
     QVector3D m_position, m_direction, m_up;
+    QVector3D m_hmm = QVector3D(0, 0, 1);
+    // float m_far_plane = 100000.0f;
+    float m_far_plane = 100000000.0f;
 
     void setUpVector();
   };
