@@ -1,0 +1,51 @@
+<RCC>
+    <qresource prefix="/theme/">
+        <file alias="blue/checkbox_checked_with_bg_disabled.png">theme/blue/checkbox_checked_with_bg_disabled.png</file>
+        <file alias="blue/checkbox_unchecked.png">theme/blue/checkbox_unchecked.png</file>
+        <file alias="blue/close_tab_unselected.png">theme/blue/close_tab_unselected.png</file>
+        <file alias="blue/slider_handle_hover.png">theme/blue/slider_handle_hover.png</file>
+        <file alias="blue/radio_button_on_disabled.png">theme/blue/radio_button_on_disabled.png</file>
+        <file alias="blue/checkbox_checked_with_bg_hover.png">theme/blue/checkbox_checked_with_bg_hover.png</file>
+        <file alias="blue/ngtv_sign_hover.png">theme/blue/ngtv_sign_hover.png</file>
+        <file alias="blue/checkbox_unchecked_hover.png">theme/blue/checkbox_unchecked_hover.png</file>
+        <file alias="blue/checkbox_unchecked_with_bg_hover.png">theme/blue/checkbox_unchecked_with_bg_hover.png</file>
+        <file alias="blue/radio_button_on.png">theme/blue/radio_button_on.png</file>
+        <file alias="blue/checkbox_checked_with_bg.png">theme/blue/checkbox_checked_with_bg.png</file>
+        <file alias="blue/branch_opened.png">theme/blue/branch_opened.png</file>
+        <file alias="blue/branch_closed_disabled.png">theme/blue/branch_closed_disabled.png</file>
+        <file alias="blue/close_disabled.png">theme/blue/close_disabled.png</file>
+        <file alias="blue/slider_handle.png">theme/blue/slider_handle.png</file>
+        <file alias="blue/checkbox_indeterminate.png">theme/blue/checkbox_indeterminate.png</file>
+        <file alias="blue/dock_widget_lock.png">theme/blue/dock_widget_lock.png</file>
+        <file alias="blue/pstv_sign_hover.png">theme/blue/pstv_sign_hover.png</file>
+        <file alias="blue/radio_button_off_disabled.png">theme/blue/radio_button_off_disabled.png</file>
+        <file alias="blue/pstv_sign_disabled.png">theme/blue/pstv_sign_disabled.png</file>
+        <file alias="blue/checkbox_checked_hover.png">theme/blue/checkbox_checked_hover.png</file>
+        <file alias="blue/slider_handle_disabled.png">theme/blue/slider_handle_disabled.png</file>
+        <file alias="blue/close_tab_selected.png">theme/blue/close_tab_selected.png</file>
+        <file alias="blue/size_grip.png">theme/blue/size_grip.png</file>
+        <file alias="blue/combo_box_down_arrow.png">theme/blue/combo_box_down_arrow.png</file>
+        <file alias="blue/ngtv_sign.png">theme/blue/ngtv_sign.png</file>
+        <file alias="blue/radio_button_off.png">theme/blue/radio_button_off.png</file>
+        <file alias="blue/dark_close.png">theme/blue/dark_close.png</file>
+        <file alias="blue/radio_button_on_hover.png">theme/blue/radio_button_on_hover.png</file>
+        <file alias="blue/checkbox_unchecked_disabled.png">theme/blue/checkbox_unchecked_disabled.png</file>
+        <file alias="blue/checkbox_unchecked_with_bg_disabled.png">theme/blue/checkbox_unchecked_with_bg_disabled.png</file>
+        <file alias="blue/checkbox_unchecked_with_bg.png">theme/blue/checkbox_unchecked_with_bg.png</file>
+        <file alias="blue/checkbox_checked_disabled.png">theme/blue/checkbox_checked_disabled.png</file>
+        <file alias="blue/checkbox_indeterminate_disabled.png">theme/blue/checkbox_indeterminate_disabled.png</file>
+        <file alias="blue/radio_button_off_hover.png">theme/blue/radio_button_off_hover.png</file>
+        <file alias="blue/ngtv_sign_disabled.png">theme/blue/ngtv_sign_disabled.png</file>
+        <file alias="blue/combo_box_down_arrow_disabled.png">theme/blue/combo_box_down_arrow_disabled.png</file>
+        <file alias="blue/branch_closed.png">theme/blue/branch_closed.png</file>
+        <file alias="blue/close_tab_disabled.png">theme/blue/close_tab_disabled.png</file>
+        <file alias="blue/checkbox_checked.png">theme/blue/checkbox_checked.png</file>
+        <file alias="blue/checkbox_indeterminate_hover.png">theme/blue/checkbox_indeterminate_hover.png</file>
+        <file alias="blue/pstv_sign.png">theme/blue/pstv_sign.png</file>
+        <file alias="blue/close.png">theme/blue/close.png</file>
+        <file alias="blue/dock_widget_lock_disabled.png">theme/blue/dock_widget_lock_disabled.png</file>
+        <file alias="blue/branch_opened_disabled.png">theme/blue/branch_opened_disabled.png</file>
+
+        <file alias="DarkBlue.qss">theme/DarkBlue.qss</file>
+    </qresource>
+</RCC>
