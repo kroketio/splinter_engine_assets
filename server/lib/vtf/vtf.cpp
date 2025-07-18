@@ -120,7 +120,7 @@ namespace vtf {
     VTFLib::CVTFFile *file = vtfFile.get();
     auto mips_computed = CVTFFile::ComputeMipmapCount(w, h, 1);
     if (!file->Init(w, h, 1, 1, 1, format, vlTrue, mips_computed)) {
-      qWarning() << "Could not create VTF:" << util::get_last_vtflib_error();
+      qWarning() << "Could not create VTF:" << diffuse->name << ":" << util::get_last_vtflib_error();
       free(dest);
       return false;
     }

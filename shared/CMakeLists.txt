@@ -52,6 +52,6 @@ target_compile_options(shared PUBLIC
     ${GTK_CFLAGS_OTHER}
 )
 
-if(${CMAKE_BUILD_TYPE} STREQUAL "Release")
+#if(${CMAKE_BUILD_TYPE} STREQUAL "Release")
     target_compile_definitions(shared PUBLIC GENERATE_VTF=1)
-endif()
+#endif()
