@@ -9,6 +9,7 @@
 namespace engine {
   class OpenGLMaterial;
   extern QMap<QString, OpenGLMaterial*> GLMaterialCache;
+
   class OpenGLMaterial : public QObject {
     Q_OBJECT
 

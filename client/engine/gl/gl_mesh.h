@@ -8,6 +8,16 @@
 #include "gl_material.h"
 
 namespace engine {
+  struct ShaderModelInfo {
+    float modelMat[16];     // 64 bytes @ offset 0
+    float normalMat[16];    // 64 bytes @ offset 64
+    int sizeFixed;          // 4 bytes  @ offset 128
+    int selected;           // 4 bytes  @ offset 132
+    int highlighted;        // 4 bytes  @ offset 136
+    unsigned int pickingID; // 4 bytes  @ offset 140
+    int padding[4];         // 16 bytes @ offset 144 — brings total to 160
+  };
+
   class OpenGLMesh: public QObject {
     Q_OBJECT
 
@@ -18,8 +28,10 @@ public:
     Mesh* host() const;
 
     void create();
+    void updateModelInfo();
+    void updateMaterialInfo();
     void commit();
-    void render(bool pickingPass = false);
+    void render(bool updateHighlight = false);
     void destroy();
 
     void setSizeFixed(bool sizeFixed);
@@ -39,7 +51,8 @@ public:
     QOpenGLBuffer * m_vbo, *m_ebo;
     QOpenGLFunctions_3_3_Core * glFuncs;
 
-    static OpenGLUniformBufferObject *m_modelInfo;
+    ShaderModelInfo shaderModelInfo;
+    OpenGLUniformBufferObject *m_modelInfo = 0;
 
     private slots:
       void materialChanged(const QSharedPointer<Material> &material);

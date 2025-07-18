@@ -60,6 +60,7 @@ namespace engine {
     QVector3D m_hmm = QVector3D(0, 0, 1);
     // float m_far_plane = 100000.0f;
     float m_far_plane = 100000000.0f;
+    QVector3D m_position_spawn = QVector3D(429.591, 427.505, 428.044);
 
     void setUpVector();
   };

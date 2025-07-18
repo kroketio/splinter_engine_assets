@@ -32,6 +32,7 @@ namespace engine {
     connect(m_host.data(), &Material::bumpTextureChanged, this, &OpenGLMaterial::bumpTextureChanged);
     connect(m_host.data(), &Material::destroyed, this, &OpenGLMaterial::hostDestroyed);
 
+    setObjectName(m_host->objectName());
     setParent(parent);
   }
 

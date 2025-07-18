@@ -27,18 +27,19 @@ MainWindow::MainWindow(AppContext *ctx, QWidget *parent) :
   this->show();
   this->test();
 
-  // example get config value:
-  auto test = config()->get(ConfigKeys::Test).toString();
-  qDebug() << "config value: " << test;
-
-  // example set config value
-  // config()->set(ConfigKeys::Test, "test2");
-
   // example QWidget button handler
   connect(ui->pushButton, &QPushButton::clicked, [=] {
-    bla += 10;
-    QQuaternion rotation = QQuaternion::fromAxisAndAngle(QVector3D(0, 0, 1), bla);
-    m_mesh->setRotation(rotation);
+    // bla += 10;
+    // QQuaternion rotation = QQuaternion::fromAxisAndAngle(QVector3D(0, 0, 1), bla);
+    // m_mesh->setRotation(rotation);
+
+      int i = 0;
+      for (const auto& mesh: m_scene->m_meshes) {
+        if (i % 2 == 0) {
+          mesh->setHighlighted(true);
+        }
+        i += 1;
+      }
   });
 }
 
@@ -128,9 +129,9 @@ void MainWindow::test() {
   });
 
   // m_scene->loadVMF("/home/dsc/CLionProjects/godot/texture_browser/cube_test.vmf");
-  m_scene->loadVMF("/media/dsc/0376C0A40D1AE4C9/source_maps/damascus/assad.vmf");
+  // m_scene->loadVMF("/media/dsc/0376C0A40D1AE4C9/source_maps/damascus/assad.vmf");
   // m_scene->loadVMF("/media/dsc/0376C0A40D1AE4C9/source_maps/angelkanchev.vmf");
-  // m_scene->loadVMF("/home/dsc/CLionProjects/godot/texture_browser/cube_test.vmf");
+  m_scene->loadVMF("/home/dsc/CLionProjects/godot/texture_browser/cube_test.vmf");
 
   // QVector3D v0(704, -256, 0);
   // QVector3D v1(768, -256, 0);

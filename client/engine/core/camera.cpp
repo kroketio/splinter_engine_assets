@@ -7,7 +7,7 @@ namespace engine {
 
     // setPosition(QVector3D(5, 5, 5));
     // setPosition(QVector3D(704.0f, -256.0f, 0.0f));
-    setPosition(QVector3D(0.0f, 0.0f, 0.0f));
+    setPosition(m_position_spawn);
     setParent(parent);
   }
 
@@ -128,7 +128,7 @@ namespace engine {
     setAspectRatio(1.0f);
     setNearPlane(0.1f);
     setFarPlane(m_far_plane);
-    setPosition(QVector3D(40, 40, 40));
+    setPosition(m_position_spawn);
     setDirection(QVector3D(-1, -1, -1));
 
     qDebug() << this->objectName() << "is reset";

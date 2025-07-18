@@ -144,7 +144,6 @@ namespace engine {
   }
 
   void OpenGLScene::renderModels(bool pickingPass) {
-    // auto start = std::chrono::high_resolution_clock::now();
     std::unordered_map<OpenGLMaterial*, std::vector<OpenGLMesh*>> meshBatches;
 
     for (auto* mesh : m_normalMeshes) {
@@ -155,31 +154,20 @@ namespace engine {
       meshBatches[mat].push_back(mesh);
     }
 
-    OpenGLMaterial* lastBoundMaterial = nullptr;
     int i = 0;
     for (const auto& [material, meshList] : meshBatches) {
       // bind material once for the batch
-      if (!pickingPass && material && material != lastBoundMaterial) {
+      if (!material->is_bound)
         material->bind();
-        lastBoundMaterial = material;
-      }
 
       // render each mesh in this batch
       for (auto* mesh : meshList) {
         mesh->setPickingID(1000 + i);
-        mesh->render(pickingPass);
+        mesh->render(mesh->host()->highlighted());
         i += 1;
-      }
-
-      // Release material if used
-      if (!pickingPass && material) {
-        material->release();
       }
     }
 
-    // auto end = std::chrono::high_resolution_clock::now();
-    // std::chrono::duration<double, std::milli> elapsed = end - start;
-    // std::cout << "Function took " << elapsed.count() << " ms" << std::endl;
   }
 
   void OpenGLScene::updateFrustumPlanes(const QMatrix4x4& vp) {
@@ -378,6 +366,10 @@ namespace engine {
     // int maxColumns = 10, cellSize = 1;
     // int x = (index % maxColumns) * cellSize;
     // int y = (index / maxColumns) * cellSize;
+
+    connect(mesh, &AbstractEntity::highlightedChanged, [this](bool highlighted) {
+
+    });
 
     auto m = new OpenGLMesh(mesh, this);
     mesh->setPosition(QVector3D(0, 0, 0));

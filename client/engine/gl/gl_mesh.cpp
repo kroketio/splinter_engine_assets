@@ -3,18 +3,6 @@
 #include "gl_uniform_buffer_object.h"
 
 namespace engine {
-  struct ShaderModelInfo {
-    float modelMat[16];   // 64          // 0
-    float normalMat[16];  // 64          // 64
-    int sizeFixed;        // 4           // 128
-    int selected;         // 4           // 132
-    int highlighted;      // 4           // 136
-    uint pickingID;        // 4           // 140
-  };
-
-  static ShaderModelInfo shaderModelInfo;
-
-  OpenGLUniformBufferObject *OpenGLMesh::m_modelInfo = 0;
 
   OpenGLMesh::OpenGLMesh(Mesh * mesh, QObject* parent): QObject(0) {
     m_host = mesh;
@@ -85,31 +73,66 @@ namespace engine {
     m_vao->release();
   }
 
-  void OpenGLMesh::commit() {
+  void OpenGLMesh::updateModelInfo() {
     QMatrix4x4 modelMat = m_host->globalModelMatrix();
     memcpy(shaderModelInfo.modelMat, modelMat.constData(), 64);
     memcpy(shaderModelInfo.normalMat, QMatrix4x4(modelMat.normalMatrix()).constData(), 64);
     shaderModelInfo.sizeFixed = this->m_sizeFixed;
     shaderModelInfo.selected = m_host->selected();
-    shaderModelInfo.highlighted = m_host->highlighted();
+    shaderModelInfo.highlighted = 0;
     shaderModelInfo.pickingID = this->m_pickingID;
 
-    if (m_host->highlighted())
-      int weogw = 1;
-
-    if (m_modelInfo == 0) {
+    if (m_modelInfo == nullptr) {
       m_modelInfo = new OpenGLUniformBufferObject;
       m_modelInfo->create();
       m_modelInfo->bind();
-      m_modelInfo->allocate(MODEL_INFO_BINDING_POINT, NULL, sizeof(ShaderModelInfo));
+      m_modelInfo->allocate(MODEL_INFO_BINDING_POINT, nullptr, sizeof(ShaderModelInfo));
       m_modelInfo->release();
     }
+
     m_modelInfo->bind();
     m_modelInfo->write(0, &shaderModelInfo, sizeof(ShaderModelInfo));
     m_modelInfo->release();
   }
 
-  void OpenGLMesh::render(bool pickingPass) {
+  void OpenGLMesh::updateMaterialInfo() {
+    shaderModelInfo.highlighted = m_host->highlighted();
+
+    if (m_modelInfo) {
+      m_modelInfo->bind();
+      const int offset = offsetof(ShaderModelInfo, highlighted);
+      m_modelInfo->write(offset, &shaderModelInfo.highlighted, sizeof(shaderModelInfo.highlighted));
+      m_modelInfo->release();
+    }
+  }
+
+  void OpenGLMesh::commit() {
+    updateModelInfo();      // Static data like transforms, selection, etc.
+    updateMaterialInfo();   // Dynamic per-draw-call material state
+    // QMatrix4x4 modelMat = m_host->globalModelMatrix();
+    // memcpy(shaderModelInfo.modelMat, modelMat.constData(), 64);
+    // memcpy(shaderModelInfo.normalMat, QMatrix4x4(modelMat.normalMatrix()).constData(), 64);
+    // shaderModelInfo.sizeFixed = this->m_sizeFixed;
+    // shaderModelInfo.selected = m_host->selected();
+    // shaderModelInfo.highlighted = m_host->highlighted();
+    // shaderModelInfo.pickingID = this->m_pickingID;
+    //
+    // if (m_host->highlighted())
+    //   int weogw = 1;
+    //
+    // if (m_modelInfo == 0) {
+    //   m_modelInfo = new OpenGLUniformBufferObject;
+    //   m_modelInfo->create();
+    //   m_modelInfo->bind();
+    //   m_modelInfo->allocate(MODEL_INFO_BINDING_POINT, NULL, sizeof(ShaderModelInfo));
+    //   m_modelInfo->release();
+    // }
+    // m_modelInfo->bind();
+    // m_modelInfo->write(0, &shaderModelInfo, sizeof(ShaderModelInfo));
+    // m_modelInfo->release();
+  }
+
+  void OpenGLMesh::render(bool updateHighlight) {
     if (!m_host->is_visible)
       return;
 
@@ -117,15 +140,14 @@ namespace engine {
       create(); // Initialize buffers if needed
     }
 
-    if (pickingPass) {
-      commit();
-      m_openGLMaterial->bind();
-    }
-
-    if (!pickingPass && !m_host->is_committed) {
+    if (!m_host->is_committed) {
       commit();
       m_host->is_committed = true;
-      return; // Skip this frame
+      return;
+    }
+
+    if (updateHighlight) {
+      updateMaterialInfo();
     }
 
     m_vao->bind();
@@ -140,10 +162,6 @@ namespace engine {
     glFuncs->glDrawElements(mode, static_cast<GLsizei>(m_host->indices().size()), GL_UNSIGNED_INT, nullptr);
 
     m_vao->release();
-
-    if (pickingPass) {
-      m_openGLMaterial->release();
-    }
   }
 
   // void OpenGLMesh::render(bool pickingPass) {

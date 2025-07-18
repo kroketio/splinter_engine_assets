@@ -129,12 +129,12 @@ namespace engine {
     if (m_highlighted == highlighted)
       return;
 
-    if (highlighted) {
-      if (m_highlightedObject && m_highlightedObject != this)
-        m_highlightedObject->setHighlighted(false);
-      m_highlightedObject = this;
-    } else if (m_highlightedObject == this)
-      m_highlightedObject = 0;
+    // if (highlighted) {
+    //   if (m_highlightedObject && m_highlightedObject != this)
+    //     m_highlightedObject->setHighlighted(false);
+    //   m_highlightedObject = this;
+    // } else if (m_highlightedObject == this)
+    //   m_highlightedObject = 0;
 
     qDebug() << this->objectName() << "is highlighted";
 

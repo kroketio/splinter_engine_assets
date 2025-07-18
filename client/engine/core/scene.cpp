@@ -169,7 +169,7 @@ namespace engine {
           }
 
           mesh->setMaterial(mat);
-          // meshes << mesh;
+          m_meshes << mesh;
           this->meshAdded(mesh);
         }
       }
@@ -192,7 +192,7 @@ namespace engine {
   bool Scene::addMesh(Mesh* mesh) {
     m_meshes.push_back(mesh);
     mesh->setParent(this);
-    mesh->setObjectName("randommesh");
+    // mesh->setObjectName("randommesh");
     emit meshAdded(mesh);
   }
 

@@ -8,7 +8,6 @@ uniform sampler2D diffuseMap;
 uniform sampler2D specularMap;
 uniform sampler2D bumpMap;
 
-
 vec3 calcDirectionalLight(int idx, vec3 normal, vec3 color, float diff, float spec) {
     vec3 lightDir = normalize(-vec3(directionalLight[idx].direction));
     vec3 viewDir = normalize(vec3(viewPos) - fragPos);

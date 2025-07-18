@@ -23,6 +23,9 @@ public:
     Scene(const Scene& scene);
     ~Scene();
 
+    QVector<Mesh*> m_meshes;
+    Camera * m_camera;
+
     bool loadVMF(const std::filesystem::path& path);
 
     bool setCamera(Camera* camera);
@@ -66,14 +69,12 @@ public:
 
   private:
     // TransformGizmo * m_gizmo;
-    Camera * m_camera;
     QVector<Gridline*> m_gridlines;
     QVector<AmbientLight*> m_ambientLights;
     QVector<DirectionalLight*> m_directionalLights;
     QVector<PointLight*> m_pointLights;
     QVector<SpotLight*> m_spotLights;
     // QVector<Model*> m_models;
-    QVector<Mesh*> m_meshes;
 
     std::filesystem::path path_vmf;
     std::optional<vmfpp::VMF> vmf;
