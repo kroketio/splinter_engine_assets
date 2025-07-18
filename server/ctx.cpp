@@ -23,7 +23,9 @@ Ctx::Ctx() {
   assetPackManager = new AssetPackManager(this);
   config()->set(ConfigKeys::CacheDir, globals::cacheDirectory);
 
+#ifdef GENERATE_VTF
   globals::FUNC_GENERATE_VMT_VTF_FILES = vtf::generate_vmt_vtf_files;
+#endif
   createConfigDirectory(QStringList({
     globals::configDirectory,
     globals::cacheDirectory,
